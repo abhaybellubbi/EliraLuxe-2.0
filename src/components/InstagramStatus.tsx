@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Heart, MessageCircle, ShoppingBag, ChevronLeft, ChevronRight, CheckCircle2, Play, Pause, ExternalLink, Video } from "lucide-react";
+import { X, Heart, ShoppingBag, ChevronLeft, ChevronRight, CheckCircle2, Play, Pause, ExternalLink, Video } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getInstagramStories, getInstagramPosts, getContentSettings } from "@/lib/api";
 import { resolveMediaUrl } from "@/lib/utils";
@@ -170,8 +170,10 @@ export function InstagramStatus() {
   const handleNextSlide = () => {
     if (activeStoryIndex === null) return;
     const currentStory = stories[activeStoryIndex];
+    if (!currentStory || !currentStory.slides) return;
+
     if (activeSlideIndex < currentStory.slides.length - 1) {
-      setActiveSlideIndex(activeSlideIndex + 1);
+      setActiveSlideIndex((prev) => prev + 1);
     } else if (activeStoryIndex < stories.length - 1) {
       setActiveStoryIndex(activeStoryIndex + 1);
       setActiveSlideIndex(0);
@@ -183,7 +185,7 @@ export function InstagramStatus() {
   const handlePrevSlide = () => {
     if (activeStoryIndex === null) return;
     if (activeSlideIndex > 0) {
-      setActiveSlideIndex(activeSlideIndex - 1);
+      setActiveSlideIndex((prev) => prev - 1);
     } else if (activeStoryIndex > 0) {
       const prevStory = stories[activeStoryIndex - 1];
       setActiveStoryIndex(activeStoryIndex - 1);
@@ -201,7 +203,7 @@ export function InstagramStatus() {
   return (
     <section className="py-12 bg-gradient-to-b from-background via-cream/40 to-background dark:via-secondary/20 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">
-        {/* Header */}
+        {/* Header (Removed requested tagline) */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
           <div>
             <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-gold-deep mb-2">
@@ -215,9 +217,6 @@ export function InstagramStatus() {
               @eliraluxe <span className="font-script shimmer-gold">Live Stories</span>
             </h2>
           </div>
-          <p className="text-sm text-muted-foreground max-w-sm">
-            Admin-curated daily stories & video drops. Tap any highlight to view video/photo stories and order directly.
-          </p>
         </div>
 
         {/* Story Circles Bar */}
@@ -282,7 +281,7 @@ export function InstagramStatus() {
         {/* Instagram Posts Grid */}
         <div className="mt-10">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="font-display text-xl md:text-2xl">Trending Instagram Feed</h3>
+            <h3 className="font-display text-xl md:text-2xl font-bold">Trending Instagram Feed</h3>
             <a
               href={instagramUrl}
               target="_blank"
@@ -296,7 +295,6 @@ export function InstagramStatus() {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {posts.map((post: any) => {
-              const isLiked = likedMap[post.id];
               return (
                 <div
                   key={post.id}
@@ -364,16 +362,16 @@ export function InstagramStatus() {
         </div>
       </div>
 
-      {/* FULLSCREEN INSTAGRAM STORY MODAL WITH VIDEO SUPPORT */}
+      {/* FULLSCREEN INSTAGRAM STORY MODAL WITH FIXED TAP/CLICK NAVIGATION */}
       {activeStoryIndex !== null && currentStory && currentSlide && (
-        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-0 md:p-4 animate-fade-in">
+        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-0 md:p-4 animate-fade-in select-none">
           {/* Backdrop click close */}
-          <div className="absolute inset-0" onClick={closeStory} />
+          <div className="absolute inset-0 z-10" onClick={closeStory} />
 
           {/* Main Story Container */}
-          <div className="relative w-full max-w-md h-full md:h-[90vh] md:max-h-[820px] bg-ink rounded-none md:rounded-3xl overflow-hidden shadow-2xl flex flex-col justify-between z-10 border border-gold/30">
+          <div className="relative w-full max-w-md h-full md:h-[90vh] md:max-h-[820px] bg-ink rounded-none md:rounded-3xl overflow-hidden shadow-2xl flex flex-col justify-between z-20 border border-gold/30">
             {/* Progress Bars */}
-            <div className="absolute top-0 left-0 right-0 z-30 p-3 bg-gradient-to-b from-black/80 to-transparent flex gap-1.5">
+            <div className="absolute top-0 left-0 right-0 z-40 p-3 bg-gradient-to-b from-black/80 to-transparent flex gap-1.5 pointer-events-none">
               {currentStory.slides.map((slide, sIdx) => {
                 let widthClass = "w-0";
                 if (sIdx < activeSlideIndex) widthClass = "w-full";
@@ -387,7 +385,7 @@ export function InstagramStatus() {
             </div>
 
             {/* Story Header */}
-            <div className="absolute top-5 left-0 right-0 z-30 px-4 py-2 flex items-center justify-between text-white bg-gradient-to-b from-black/60 to-transparent">
+            <div className="absolute top-5 left-0 right-0 z-40 px-4 py-2 flex items-center justify-between text-white bg-gradient-to-b from-black/60 to-transparent">
               <div className="flex items-center gap-3">
                 <img src={logo} alt="Elira Luxe" className="w-10 h-10 rounded-full border-2 border-gold object-contain bg-background" />
                 <div>
@@ -401,13 +399,13 @@ export function InstagramStatus() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setIsPaused(!isPaused)}
-                  className="p-2 rounded-full bg-black/40 text-white hover:bg-black/60 transition"
+                  className="p-2 rounded-full bg-black/50 text-white hover:bg-black/80 transition"
                 >
                   {isPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
                 </button>
                 <button
                   onClick={closeStory}
-                  className="p-2 rounded-full bg-black/40 text-white hover:bg-black/60 transition"
+                  className="p-2 rounded-full bg-black/50 text-white hover:bg-black/80 transition"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -432,39 +430,54 @@ export function InstagramStatus() {
                   className="w-full h-full object-cover"
                 />
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/40" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/40 pointer-events-none" />
 
-              {/* Navigation touch zones */}
-              <button
-                onClick={handlePrevSlide}
-                className="absolute left-0 top-1/4 bottom-1/4 w-1/3 z-20 focus:outline-none"
-                aria-label="Previous slide"
-              />
-              <button
-                onClick={handleNextSlide}
-                className="absolute right-0 top-1/4 bottom-1/4 w-1/3 z-20 focus:outline-none"
-                aria-label="Next slide"
+              {/* Tap Left 50% to Go Previous */}
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePrevSlide();
+                }}
+                className="absolute left-0 top-16 bottom-40 w-1/2 z-30 cursor-pointer"
+                title="Previous Story / Slide"
               />
 
-              {/* Arrow navigation buttons on desktop */}
+              {/* Tap Right 50% to Go Next */}
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleNextSlide();
+                }}
+                className="absolute right-0 top-16 bottom-40 w-1/2 z-30 cursor-pointer"
+                title="Next Story / Slide"
+              />
+
+              {/* Desktop Arrow Buttons */}
               {activeStoryIndex > 0 || activeSlideIndex > 0 ? (
                 <button
-                  onClick={handlePrevSlide}
-                  className="hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-black/50 text-white hover:bg-gold hover:text-black transition"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handlePrevSlide();
+                  }}
+                  className="hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 z-40 p-3 rounded-full bg-black/60 text-white hover:bg-gold hover:text-black transition shadow-lg"
                 >
                   <ChevronLeft className="w-6 h-6" />
                 </button>
               ) : null}
+
               <button
-                onClick={handleNextSlide}
-                className="hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-black/50 text-white hover:bg-gold hover:text-black transition"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleNextSlide();
+                }}
+                className="hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 z-40 p-3 rounded-full bg-black/60 text-white hover:bg-gold hover:text-black transition shadow-lg"
               >
                 <ChevronRight className="w-6 h-6" />
               </button>
             </div>
 
             {/* Story Content & Action Overlay */}
-            <div className="absolute bottom-0 left-0 right-0 z-30 p-6 text-white bg-gradient-to-t from-black via-black/80 to-transparent">
+            <div className="absolute bottom-0 left-0 right-0 z-40 p-6 text-white bg-gradient-to-t from-black via-black/85 to-transparent">
               <div className="mb-3">
                 <span className="bg-gold text-primary-foreground text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow">
                   {currentSlide.tag}

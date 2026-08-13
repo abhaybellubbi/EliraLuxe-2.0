@@ -8,10 +8,10 @@ import {
   ShoppingCart,
   AlertTriangle,
   ArrowRight,
-  TrendingUp,
-  Clock,
   Sparkles,
   Users,
+  ShieldCheck,
+  Gem,
 } from "lucide-react";
 
 export const Route = createFileRoute("/admin/")({
@@ -40,7 +40,21 @@ function DashboardIndex() {
     (p: any) => p.stockStatus === "in_stock" || p.stockStatus === "limited_stock",
   ).length;
   const outOfStockProducts = products.filter((p: any) => p.stockStatus === "out_of_stock").length;
-  const limitedStockProducts = products.filter((p: any) => p.stockStatus === "limited_stock");
+
+  // Material distinction calculation
+  const goldProducts = products.filter((p: any) =>
+    p.name.toLowerCase().includes("gold") ||
+    p.tagline.toLowerCase().includes("gold") ||
+    p.description?.toLowerCase().includes("gold")
+  );
+
+  const surgicalSteelProducts = products.filter((p: any) =>
+    p.name.toLowerCase().includes("steel") ||
+    p.name.toLowerCase().includes("silver") ||
+    p.tagline.toLowerCase().includes("steel") ||
+    p.description?.toLowerCase().includes("steel") ||
+    !p.name.toLowerCase().includes("gold")
+  );
 
   const activePromotions = promotions.filter((p: any) => p.active).length;
   const totalOrders = orders.length;
@@ -62,31 +76,28 @@ function DashboardIndex() {
       color: "text-blue-400 bg-blue-500/10 border-blue-500/20",
     },
     {
-      label: "Active Products",
-      value: activeProducts,
-      icon: ShoppingBag,
-      color: "text-green-400 bg-green-500/10 border-green-500/20",
+      label: "18k PVD Gold Craft",
+      value: goldProducts.length,
+      icon: Gem,
+      color: "text-amber-400 bg-amber-500/10 border-amber-500/20",
     },
     {
-      label: "Out of Stock",
-      value: outOfStockProducts,
-      icon: AlertTriangle,
-      color:
-        outOfStockProducts > 0
-          ? "text-red-400 bg-red-500/10 border-red-500/20"
-          : "text-cream/40 bg-white/5 border-white/10",
+      label: "316L Surgical Steel",
+      value: surgicalSteelProducts.length,
+      icon: ShieldCheck,
+      color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
     },
     {
       label: "Active Promos",
       value: activePromotions,
       icon: Tag,
-      color: "text-amber-400 bg-amber-500/10 border-amber-500/20",
+      color: "text-purple-400 bg-purple-500/10 border-purple-500/20",
     },
     {
-      label: "WhatsApp Enquiries",
+      label: "WhatsApp Orders",
       value: totalOrders,
       icon: ShoppingCart,
-      color: "text-purple-400 bg-purple-500/10 border-purple-500/20",
+      color: "text-rose-400 bg-rose-500/10 border-rose-500/20",
     },
   ];
 
@@ -94,9 +105,9 @@ function DashboardIndex() {
     <div className="space-y-8 animate-fade-in">
       {/* Header */}
       <div>
-        <h1 className="font-display text-4xl font-semibold tracking-wide">Overview</h1>
+        <h1 className="font-display text-4xl font-semibold tracking-wide">Overview Dashboard</h1>
         <p className="text-muted-foreground text-sm">
-          Real-time summaries of your Elira Luxe inventory, offers, and WhatsApp enquiries.
+          Real-time summary of inventory, material craftsmanship distinction (18k Gold vs 316L Surgical Steel), and sales.
         </p>
       </div>
 
@@ -105,7 +116,7 @@ function DashboardIndex() {
         {stats.map((stat) => (
           <div
             key={stat.label}
-            className={`p-6 rounded-2xl bg-[#121215] border border-gold/5 flex flex-col justify-between min-h-[140px] shadow-lg`}
+            className={`p-6 rounded-2xl bg-[#121215] border border-gold/10 flex flex-col justify-between min-h-[140px] shadow-lg`}
           >
             <div className="flex justify-between items-start">
               <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
@@ -120,6 +131,70 @@ function DashboardIndex() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Material Distinction Comparison Card */}
+      <div className="bg-[#121215] border border-gold/15 rounded-2xl p-6 shadow-xl space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gold/10 pb-4 gap-4">
+          <div>
+            <div className="text-xs uppercase tracking-widest text-gold font-bold mb-1 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-gold" />
+              Material Craftsmanship Distinction
+            </div>
+            <h2 className="font-display text-2xl font-bold text-cream">
+              18k PVD Gold Finish vs 316L Surgical Steel
+            </h2>
+          </div>
+          <Link
+            to="/admin/products"
+            className="text-xs text-gold hover:underline flex items-center gap-1 font-bold"
+          >
+            <span>Manage Product Materials</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* 18k PVD Gold Card */}
+          <div className="p-5 rounded-xl border border-amber-500/30 bg-amber-500/5 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Gem className="w-5 h-5 text-amber-400" />
+                <span className="font-display text-lg font-bold text-amber-300">18k PVD Vacuum Gold Plating</span>
+              </div>
+              <span className="bg-amber-400/20 text-amber-300 text-xs font-bold px-2.5 py-1 rounded-full border border-amber-400/40">
+                {goldProducts.length} Products
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Vacuum ion-plated 18k gold layer over 316L steel. Engineered for high shine, luxury warmth, and 100% water & tarnish resistance.
+            </p>
+            <div className="pt-2 flex items-center gap-2 text-[11px] text-amber-200/80 font-mono">
+              <span>✦ 10x Thicker Ion Coating</span>
+              <span>✦ Sweat & Sea Water Safe</span>
+            </div>
+          </div>
+
+          {/* 316L Surgical Steel Card */}
+          <div className="p-5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                <span className="font-display text-lg font-bold text-emerald-300">316L Surgical Stainless Steel</span>
+              </div>
+              <span className="bg-emerald-400/20 text-emerald-300 text-xs font-bold px-2.5 py-1 rounded-full border border-emerald-400/40">
+                {surgicalSteelProducts.length} Products
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Medical-grade hypoallergenic 316L steel core. Zero green skin, zero rust, indestructible durability for everyday 24/7 wear.
+            </p>
+            <div className="pt-2 flex items-center gap-2 text-[11px] text-emerald-200/80 font-mono">
+              <span>✦ 100% Hypoallergenic</span>
+              <span>✦ Zero Nickel & Zero Green Skin</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Dynamic Main Dashboard Area */}
@@ -224,76 +299,6 @@ function DashboardIndex() {
             </a>
           </div>
         </div>
-      </div>
-
-      {/* Recent Enquiries & Orders */}
-      <div className="bg-[#121215] border border-gold/10 rounded-2xl p-6 shadow-xl space-y-6">
-        <div className="flex justify-between items-center border-b border-gold/10 pb-4">
-          <div className="flex items-center gap-2">
-            <Clock className="h-5 w-5 text-purple-400" />
-            <h2 className="font-display text-xl font-semibold">Recent WhatsApp Enquiries</h2>
-          </div>
-          <Link
-            to="/admin/orders"
-            className="text-xs text-gold hover:text-gold-light flex items-center gap-1 transition"
-          >
-            <span>View All ({totalOrders})</span>
-            <ArrowRight className="h-3 w-3" />
-          </Link>
-        </div>
-
-        {orders.length === 0 ? (
-          <div className="py-12 text-center text-muted-foreground text-sm flex flex-col items-center gap-2">
-            <ShoppingCart className="h-8 w-8 text-gold/20" />
-            <span>
-              No enquiries logged yet. They will appear here when customers click "Enquire on
-              WhatsApp".
-            </span>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-gold/10 text-xs uppercase tracking-wider text-muted-foreground">
-                  <th className="py-3 font-semibold">Customer</th>
-                  <th className="py-3 font-semibold">Product</th>
-                  <th className="py-3 font-semibold">Status</th>
-                  <th className="py-3 font-semibold">Logged At</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gold/5 text-sm">
-                {orders.slice(0, 5).map((order: any) => (
-                  <tr key={order.id} className="hover:bg-white/[0.02] transition">
-                    <td className="py-3.5">
-                      <div className="font-medium text-cream">{order.customerName}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {order.customerPhone || "No phone"}
-                      </div>
-                    </td>
-                    <td className="py-3.5 text-muted-foreground">{order.productName}</td>
-
-                    <td className="py-3.5">
-                      <span
-                        className={`px-2.5 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider ${
-                          order.status === "completed"
-                            ? "bg-green-500/10 text-green-400 border border-green-500/20"
-                            : order.status === "cancelled"
-                              ? "bg-red-500/10 text-red-400 border border-red-500/20"
-                              : "bg-purple-500/10 text-purple-400 border border-purple-500/20"
-                        }`}
-                      >
-                        {order.status}
-                      </span>
-                    </td>
-                    <td className="py-3.5 text-xs text-muted-foreground">
-                      {new Date(order.createdAt).toLocaleString()}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
       </div>
     </div>
   );
