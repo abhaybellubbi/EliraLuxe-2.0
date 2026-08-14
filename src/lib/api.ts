@@ -301,3 +301,72 @@ export const checkAdminAuth = createServerFn({ method: "POST" }).handler(async (
   const token = getCookie("elira_admin_token") || "";
   return { isAuthenticated: token === MOCK_TOKEN };
 });
+
+import {
+  initialProducts,
+  initialContentSettings,
+  initialUniqueStyles,
+  initialInstagramStories,
+  initialInstagramPosts,
+} from "./defaults";
+
+// Safe Client Wrappers (Never throw on Vercel or Serverless network error)
+export const getProductsSafe = async (): Promise<Product[]> => {
+  try {
+    const res = await getProducts();
+    return Array.isArray(res) ? res : (initialProducts as Product[]);
+  } catch (err) {
+    console.warn("getProductsSafe fallback:", err);
+    return initialProducts as Product[];
+  }
+};
+
+export const getContentSettingsSafe = async (): Promise<ContentSettings> => {
+  try {
+    const res = await getContentSettings();
+    return res || (initialContentSettings as ContentSettings);
+  } catch (err) {
+    console.warn("getContentSettingsSafe fallback:", err);
+    return initialContentSettings as ContentSettings;
+  }
+};
+
+export const getUniqueStylesSafe = async (): Promise<UniqueStyleItem[]> => {
+  try {
+    const res = await getUniqueStyles();
+    return Array.isArray(res) ? res : (initialUniqueStyles as UniqueStyleItem[]);
+  } catch (err) {
+    console.warn("getUniqueStylesSafe fallback:", err);
+    return initialUniqueStyles as UniqueStyleItem[];
+  }
+};
+
+export const getInstagramStoriesSafe = async (): Promise<InstagramStoryItem[]> => {
+  try {
+    const res = await getInstagramStories();
+    return Array.isArray(res) ? res : (initialInstagramStories as InstagramStoryItem[]);
+  } catch (err) {
+    console.warn("getInstagramStoriesSafe fallback:", err);
+    return initialInstagramStories as InstagramStoryItem[];
+  }
+};
+
+export const getInstagramPostsSafe = async (): Promise<InstagramPostItem[]> => {
+  try {
+    const res = await getInstagramPosts();
+    return Array.isArray(res) ? res : (initialInstagramPosts as InstagramPostItem[]);
+  } catch (err) {
+    console.warn("getInstagramPostsSafe fallback:", err);
+    return initialInstagramPosts as InstagramPostItem[];
+  }
+};
+
+export const getOrdersSafe = async (): Promise<Order[]> => {
+  try {
+    const res = await getOrders();
+    return Array.isArray(res) ? res : [];
+  } catch (err) {
+    console.warn("getOrdersSafe fallback:", err);
+    return [];
+  }
+};

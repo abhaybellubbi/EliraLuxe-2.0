@@ -4,7 +4,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { InstagramStatus } from "@/components/InstagramStatus";
 import { UniqueStylesSection } from "@/components/UniqueStylesSection";
 import { useQuery } from "@tanstack/react-query";
-import { getProducts, getContentSettings } from "@/lib/api";
+import { getProductsSafe, getContentSettingsSafe } from "@/lib/api";
 import heroImage from "@/assets/marketing-hero-3d.png";
 import { ShieldCheck, Sparkles, Waves, Gem, ArrowRight, MessageCircle } from "lucide-react";
 
@@ -37,7 +37,8 @@ export const Route = createFileRoute("/")({
 function Index() {
   const { data: dbProducts = [] } = useQuery({
     queryKey: ["products"],
-    queryFn: () => getProducts(),
+    queryFn: () => getProductsSafe(),
+    retry: false,
   });
 
   const {
@@ -55,7 +56,8 @@ function Index() {
     },
   } = useQuery({
     queryKey: ["contentSettings"],
-    queryFn: () => getContentSettings(),
+    queryFn: () => getContentSettingsSafe(),
+    retry: false,
   });
 
   // Show active products first (limit to 6)

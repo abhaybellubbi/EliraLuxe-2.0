@@ -3,7 +3,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Moon, Sun, Menu, X } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { useQuery } from "@tanstack/react-query";
-import { getContentSettings } from "@/lib/api";
+import { getContentSettingsSafe } from "@/lib/api";
 import { SplashScreen } from "./SplashScreen";
 import { AIChatBot } from "./AIChatBot";
 
@@ -66,7 +66,8 @@ export function SiteLayout({ children }: { children: ReactNode }) {
     },
   } = useQuery({
     queryKey: ["contentSettings"],
-    queryFn: () => getContentSettings(),
+    queryFn: () => getContentSettingsSafe(),
+    retry: false,
   });
 
   const featuredCollections = settings.featuredCollections || [
