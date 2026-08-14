@@ -4,6 +4,7 @@ import { getCookie } from "@tanstack/react-start/server";
 import {
   readDb,
   writeDb,
+  getInitialData,
   type Product,
   type Promotion,
   type ContentSettings,
@@ -18,8 +19,13 @@ const ADMIN_PASSWORD = "Alish582";
 const MOCK_TOKEN = "elira-luxe-admin-session-token-2026";
 
 export const getProducts = createServerFn({ method: "POST" }).handler(async () => {
-  const db = await readDb();
-  return db.products;
+  try {
+    const db = await readDb();
+    return Array.isArray(db?.products) ? db.products : getInitialData().products;
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    return getInitialData().products;
+  }
 });
 
 export const updateProduct = createServerFn({ method: "POST" })
@@ -49,8 +55,13 @@ export const deleteProduct = createServerFn({ method: "POST" })
   });
 
 export const getPromotions = createServerFn({ method: "POST" }).handler(async () => {
-  const db = await readDb();
-  return db.promotions || [];
+  try {
+    const db = await readDb();
+    return Array.isArray(db?.promotions) ? db.promotions : getInitialData().promotions;
+  } catch (error) {
+    console.error("Error fetching promotions:", error);
+    return getInitialData().promotions;
+  }
 });
 
 export const updatePromotion = createServerFn({ method: "POST" })
@@ -81,8 +92,13 @@ export const deletePromotion = createServerFn({ method: "POST" })
   });
 
 export const getContentSettings = createServerFn({ method: "POST" }).handler(async () => {
-  const db = await readDb();
-  return db.contentSettings;
+  try {
+    const db = await readDb();
+    return db?.contentSettings || getInitialData().contentSettings;
+  } catch (error) {
+    console.error("Error fetching content settings:", error);
+    return getInitialData().contentSettings;
+  }
 });
 
 export const updateContentSettings = createServerFn({ method: "POST" })
@@ -96,8 +112,13 @@ export const updateContentSettings = createServerFn({ method: "POST" })
 
 // UNIQUE STYLES CMS API
 export const getUniqueStyles = createServerFn({ method: "POST" }).handler(async () => {
-  const db = await readDb();
-  return db.uniqueStyles || [];
+  try {
+    const db = await readDb();
+    return Array.isArray(db?.uniqueStyles) ? db.uniqueStyles : getInitialData().uniqueStyles;
+  } catch (error) {
+    console.error("Error fetching unique styles:", error);
+    return getInitialData().uniqueStyles;
+  }
 });
 
 export const updateUniqueStyle = createServerFn({ method: "POST" })
@@ -129,8 +150,15 @@ export const deleteUniqueStyle = createServerFn({ method: "POST" })
 
 // INSTAGRAM STORIES CMS API
 export const getInstagramStories = createServerFn({ method: "POST" }).handler(async () => {
-  const db = await readDb();
-  return db.instagramStories || [];
+  try {
+    const db = await readDb();
+    return Array.isArray(db?.instagramStories)
+      ? db.instagramStories
+      : getInitialData().instagramStories;
+  } catch (error) {
+    console.error("Error fetching instagram stories:", error);
+    return getInitialData().instagramStories;
+  }
 });
 
 export const updateInstagramStory = createServerFn({ method: "POST" })
@@ -162,8 +190,15 @@ export const deleteInstagramStory = createServerFn({ method: "POST" })
 
 // INSTAGRAM POSTS CMS API
 export const getInstagramPosts = createServerFn({ method: "POST" }).handler(async () => {
-  const db = await readDb();
-  return db.instagramPosts || [];
+  try {
+    const db = await readDb();
+    return Array.isArray(db?.instagramPosts)
+      ? db.instagramPosts
+      : getInitialData().instagramPosts;
+  } catch (error) {
+    console.error("Error fetching instagram posts:", error);
+    return getInitialData().instagramPosts;
+  }
 });
 
 export const updateInstagramPost = createServerFn({ method: "POST" })
@@ -194,8 +229,13 @@ export const deleteInstagramPost = createServerFn({ method: "POST" })
   });
 
 export const getOrders = createServerFn({ method: "POST" }).handler(async () => {
-  const db = await readDb();
-  return db.orders || [];
+  try {
+    const db = await readDb();
+    return Array.isArray(db?.orders) ? db.orders : [];
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    return [];
+  }
 });
 
 export const addOrder = createServerFn({ method: "POST" })

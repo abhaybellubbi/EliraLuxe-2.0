@@ -63,17 +63,26 @@ function Index() {
     queryFn: () => getContentSettings(),
   });
 
-  const activePromos = dbPromotions.filter((p: any) => {
+  const promosList = Array.isArray(dbPromotions) ? dbPromotions : [];
+  const activePromos = promosList.filter((p: any) => {
+    if (!p) return false;
     const isExplicitlyActive = p.active === true || p.active === "true";
     if (!isExplicitlyActive) return false;
     const now = Date.now();
-    if (p.startTime && new Date(p.startTime).getTime() > now) return false;
-    if (p.endTime && new Date(p.endTime).getTime() <= now) return false;
+    if (p.startTime) {
+      const startTimeMs = new Date(p.startTime).getTime();
+      if (!isNaN(startTimeMs) && startTimeMs > now) return false;
+    }
+    if (p.endTime) {
+      const endTimeMs = new Date(p.endTime).getTime();
+      if (!isNaN(endTimeMs) && endTimeMs <= now) return false;
+    }
     return true;
   });
 
   // Show active products first (limit to 6)
-  const featured = dbProducts.filter((p: any) => p.stockStatus !== "out_of_stock").slice(0, 6);
+  const productsList = Array.isArray(dbProducts) ? dbProducts : [];
+  const featured = productsList.filter((p: any) => p && p.stockStatus !== "out_of_stock").slice(0, 6);
 
   return (
     <SiteLayout>
