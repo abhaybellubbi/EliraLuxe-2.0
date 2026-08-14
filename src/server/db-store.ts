@@ -370,6 +370,8 @@ export async function readDb(): Promise<DatabaseSchema> {
 
     if (supaData && supaData.payload) {
       cachedDb = supaData.payload as DatabaseSchema;
+      if (!cachedDb.promotions) cachedDb.promotions = getInitialData().promotions;
+      if (!cachedDb.orders) cachedDb.orders = [];
       return cachedDb;
     }
   } catch (supaErr) {
@@ -390,6 +392,12 @@ export async function readDb(): Promise<DatabaseSchema> {
     const data = await fs.readFile(DB_FILE, "utf-8");
     cachedDb = JSON.parse(data);
 
+    if (!cachedDb!.promotions) {
+      cachedDb!.promotions = getInitialData().promotions;
+    }
+    if (!cachedDb!.orders) {
+      cachedDb!.orders = [];
+    }
     if (!cachedDb!.uniqueStyles || cachedDb!.uniqueStyles.length === 0) {
       cachedDb!.uniqueStyles = getInitialData().uniqueStyles;
     }

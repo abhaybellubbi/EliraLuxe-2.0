@@ -50,13 +50,14 @@ export const deleteProduct = createServerFn({ method: "POST" })
 
 export const getPromotions = createServerFn({ method: "POST" }).handler(async () => {
   const db = await readDb();
-  return db.promotions;
+  return db.promotions || [];
 });
 
 export const updatePromotion = createServerFn({ method: "POST" })
   .inputValidator((promo: Promotion) => promo)
   .handler(async ({ data: promo }) => {
     const db = await readDb();
+    if (!db.promotions) db.promotions = [];
     const index = db.promotions.findIndex((p) => p.id === promo.id);
 
     if (index >= 0) {
@@ -73,6 +74,7 @@ export const deletePromotion = createServerFn({ method: "POST" })
   .inputValidator((id: string) => id)
   .handler(async ({ data: id }) => {
     const db = await readDb();
+    if (!db.promotions) db.promotions = [];
     db.promotions = db.promotions.filter((p) => p.id !== id);
     await writeDb(db);
     return { success: true };
@@ -193,7 +195,7 @@ export const deleteInstagramPost = createServerFn({ method: "POST" })
 
 export const getOrders = createServerFn({ method: "POST" }).handler(async () => {
   const db = await readDb();
-  return db.orders;
+  return db.orders || [];
 });
 
 export const addOrder = createServerFn({ method: "POST" })
@@ -207,6 +209,7 @@ export const addOrder = createServerFn({ method: "POST" })
   )
   .handler(async ({ data: orderData }) => {
     const db = await readDb();
+    if (!db.orders) db.orders = [];
     const newOrder: Order = {
       id: "ord_" + Math.random().toString(36).substr(2, 9),
       ...orderData,
@@ -222,6 +225,7 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
   .inputValidator((data: { id: string; status: Order["status"] }) => data)
   .handler(async ({ data }) => {
     const db = await readDb();
+    if (!db.orders) db.orders = [];
     const order = db.orders.find((o) => o.id === data.id);
     if (order) {
       order.status = data.status;
@@ -229,6 +233,16 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
       return { success: true, order };
     }
     return { success: false, error: "Order not found" };
+  });
+
+export const deleteOrder = createServerFn({ method: "POST" })
+  .inputValidator((id: string) => id)
+  .handler(async ({ data: id }) => {
+    const db = await readDb();
+    if (!db.orders) db.orders = [];
+    db.orders = db.orders.filter((o) => o.id !== id);
+    await writeDb(db);
+    return { success: true };
   });
 
 export const authenticateAdmin = createServerFn({ method: "POST" })

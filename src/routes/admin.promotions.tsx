@@ -170,6 +170,21 @@ function AdminPromotions() {
     }
   };
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+
+  const filteredPromotions = promotions.filter((promo: any) => {
+    const matchesSearch =
+      promo.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      promo.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (promo.code && promo.code.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    if (!matchesSearch) return false;
+    if (statusFilter === "active") return promo.active;
+    if (statusFilter === "inactive") return !promo.active;
+    return true;
+  });
+
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header */}
@@ -191,16 +206,60 @@ function AdminPromotions() {
         </button>
       </div>
 
+      {/* Filter and Search Bar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-4 rounded-2xl bg-[#121215] border border-gold/10 shadow-md">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+          <button
+            onClick={() => setStatusFilter("all")}
+            className={`px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition cursor-pointer ${
+              statusFilter === "all"
+                ? "bg-gold text-primary-foreground shadow-md"
+                : "bg-ink/50 text-muted-foreground hover:text-cream border border-white/5"
+            }`}
+          >
+            All ({promotions.length})
+          </button>
+          <button
+            onClick={() => setStatusFilter("active")}
+            className={`px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition cursor-pointer ${
+              statusFilter === "active"
+                ? "bg-gold text-primary-foreground shadow-md"
+                : "bg-ink/50 text-muted-foreground hover:text-cream border border-white/5"
+            }`}
+          >
+            Active ({promotions.filter((p: any) => p.active).length})
+          </button>
+          <button
+            onClick={() => setStatusFilter("inactive")}
+            className={`px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition cursor-pointer ${
+              statusFilter === "inactive"
+                ? "bg-gold text-primary-foreground shadow-md"
+                : "bg-ink/50 text-muted-foreground hover:text-cream border border-white/5"
+            }`}
+          >
+            Inactive ({promotions.filter((p: any) => !p.active).length})
+          </button>
+        </div>
+
+        <input
+          type="text"
+          placeholder="Search by title, code, description..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="px-4 py-2 rounded-xl bg-ink/50 border border-gold/10 focus:border-gold text-cream text-xs outline-none transition w-full sm:w-64"
+        />
+      </div>
+
       {/* Promotions List */}
       {isLoading ? (
         <div className="py-20 text-center text-muted-foreground">Loading active promotions...</div>
-      ) : promotions.length === 0 ? (
+      ) : filteredPromotions.length === 0 ? (
         <div className="py-20 text-center text-muted-foreground border border-gold/10 rounded-2xl bg-[#121215]">
-          No promotions created yet. Click "New Promotion" to launch an offer.
+          No promotions match your filter criteria. Click "New Promotion" to launch an offer.
         </div>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {promotions.map((promo: any) => (
+          {filteredPromotions.map((promo: any) => (
             <div
               key={promo.id}
               className={`rounded-2xl border bg-[#121215] shadow-lg overflow-hidden flex flex-col justify-between transition duration-300 ${

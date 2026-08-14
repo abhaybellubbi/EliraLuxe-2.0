@@ -1,5 +1,5 @@
-import { addOrder } from "@/lib/api";
-import { useState } from "react";
+import { addOrder, getContentSettings } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ShoppingBag } from "lucide-react";
 
@@ -26,6 +26,13 @@ export interface Product {
 export function ProductCard({ product }: { product: Product }) {
   const isOutOfStock = product.stockStatus === "out_of_stock";
   const isLimitedStock = product.stockStatus === "limited_stock";
+
+  const { data: settings } = useQuery({
+    queryKey: ["contentSettings"],
+    queryFn: () => getContentSettings(),
+  });
+
+  const storeWhatsapp = (settings?.contactWhatsapp || "918217456264").replace(/[^0-9]/g, "");
 
   const handleEnquiry = async () => {
     if (isOutOfStock) return;
@@ -67,7 +74,7 @@ export function ProductCard({ product }: { product: Product }) {
   const whatsappMessage = encodeURIComponent(
     `Hi Elira Luxe! ✨ I would like to enquire about "${product.name}" (${product.category}). Tagline: "${product.tagline}". Please share pricing & availability.`
   );
-  const whatsappUrl = `https://wa.me/918217456264?text=${whatsappMessage}`;
+  const whatsappUrl = `https://wa.me/${storeWhatsapp}?text=${whatsappMessage}`;
 
   return (
     <article

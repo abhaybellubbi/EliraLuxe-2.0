@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Sparkles, Layers, ShieldCheck, Plus, Check, ShoppingBag, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { getUniqueStyles } from "@/lib/api";
+import { getUniqueStyles, getContentSettings, addOrder } from "@/lib/api";
 import { resolveMediaUrl } from "@/lib/utils";
 import lookbook1 from "@/assets/lookbook-1.jpg";
 import lookbook2 from "@/assets/lookbook-2.jpg";
@@ -102,6 +102,13 @@ export function UniqueStylesSection() {
     queryFn: () => getUniqueStyles(),
   });
 
+  const { data: settings } = useQuery({
+    queryKey: ["contentSettings"],
+    queryFn: () => getContentSettings(),
+  });
+
+  const storeWhatsapp = (settings?.contactWhatsapp || "918217456264").replace(/[^0-9]/g, "");
+
   const styles: UniqueStyle[] = dbStyles.length > 0 ? (dbStyles as any) : FALLBACK_STYLES;
 
   const toggleItemSelect = (itemName: string) => {
@@ -109,6 +116,22 @@ export function UniqueStylesSection() {
   };
 
   const selectedList = Object.keys(selectedItems).filter((k) => selectedItems[k]);
+
+  const handleStackEnquiry = () => {
+    if (!selectedStyle) return;
+    try {
+      addOrder({
+        data: {
+          customerName: "Custom Stack Builder (WhatsApp)",
+          customerPhone: `+${storeWhatsapp}`,
+          productId: selectedStyle.id,
+          productName: `${selectedStyle.title} Stack (${selectedList.join(", ") || "Full Stack"})`,
+        },
+      });
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   return (
     <section className="py-20 bg-background relative overflow-hidden">
@@ -282,11 +305,12 @@ export function UniqueStylesSection() {
                   </div>
 
                   <a
-                    href={`https://wa.me/918217456264?text=${encodeURIComponent(
+                    href={`https://wa.me/${storeWhatsapp}?text=${encodeURIComponent(
                       `Hi Elira Luxe! I built a custom "${selectedStyle.title}" stack on your site:\n- Selected pieces: ${selectedList.join(
                         ", "
                       )}. Please share price & availability.`
                     )}`}
+                    onClick={handleStackEnquiry}
                     target="_blank"
                     rel="noreferrer"
                     className={`w-full py-3.5 rounded-full text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition shadow-xl ${

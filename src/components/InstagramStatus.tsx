@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { X, Heart, ShoppingBag, ChevronLeft, ChevronRight, CheckCircle2, Play, Pause, ExternalLink, Video } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { getInstagramStories, getInstagramPosts, getContentSettings } from "@/lib/api";
+import { getInstagramStories, getInstagramPosts, getContentSettings, addOrder } from "@/lib/api";
 import { resolveMediaUrl } from "@/lib/utils";
 import logo from "@/assets/logo.png";
 import lookbook1 from "@/assets/lookbook-1.jpg";
@@ -131,8 +131,24 @@ export function InstagramStatus() {
   });
 
   const instagramUrl = settings?.contactInstagramCommunity || "https://instagram.com/elira.luxe";
+  const storeWhatsapp = (settings?.contactWhatsapp || "918217456264").replace(/[^0-9]/g, "");
   const stories: Story[] = dbStories.length > 0 ? (dbStories as any) : FALLBACK_STORIES;
   const posts = dbPosts.length > 0 ? (dbPosts as any) : FALLBACK_POSTS;
+
+  const handleStoryEnquiry = (productName: string) => {
+    try {
+      addOrder({
+        data: {
+          customerName: "Instagram Viewer (WhatsApp)",
+          customerPhone: `+${storeWhatsapp}`,
+          productId: "story_" + Date.now(),
+          productName: productName || "Instagram Story Featured Piece",
+        },
+      });
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   // Auto advance story progress
   useEffect(() => {
@@ -499,7 +515,8 @@ export function InstagramStatus() {
                   </div>
                 </div>
                 <a
-                  href={`https://wa.me/918217456264?text=${encodeURIComponent(currentSlide.whatsappText || "Hi! I saw your story.")}`}
+                  href={`https://wa.me/${storeWhatsapp}?text=${encodeURIComponent(currentSlide.whatsappText || "Hi! I saw your story.")}`}
+                  onClick={() => handleStoryEnquiry(currentSlide.productName)}
                   target="_blank"
                   rel="noreferrer"
                   className="px-4 py-2.5 rounded-full bg-gradient-gold text-primary-foreground text-xs font-bold flex items-center gap-1.5 shadow-lg hover:scale-105 transition"
@@ -512,9 +529,10 @@ export function InstagramStatus() {
               {/* Bottom Quick Reply & Like */}
               <div className="flex items-center gap-3">
                 <a
-                  href={`https://wa.me/918217456264?text=${encodeURIComponent(
+                  href={`https://wa.me/${storeWhatsapp}?text=${encodeURIComponent(
                     `Hi @eliraluxe! Saw your story "${currentStory.title}".`
                   )}`}
+                  onClick={() => handleStoryEnquiry(`Story: ${currentStory.title}`)}
                   target="_blank"
                   rel="noreferrer"
                   className="flex-1 py-3 px-4 rounded-full bg-white/15 border border-white/20 text-xs text-white/90 focus:outline-none hover:bg-white/20 transition flex items-center justify-between"
