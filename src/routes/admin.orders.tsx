@@ -1,7 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getOrders, addOrder, updateOrderStatus, deleteOrder, getContentSettings, getProducts } from "@/lib/api";
+import {
+  getOrders,
+  addOrder,
+  getProductsSafe,
+  getContentSettingsSafe,
+  updateOrderStatus,
+  deleteOrder,
+} from "@/lib/api";
 import {
   ShoppingCart,
   Check,
@@ -40,12 +47,14 @@ function AdminOrders() {
 
   const { data: products = [] } = useQuery({
     queryKey: ["products"],
-    queryFn: () => getProducts(),
+    queryFn: () => getProductsSafe(),
+    retry: false,
   });
 
   const { data: settings } = useQuery({
     queryKey: ["contentSettings"],
-    queryFn: () => getContentSettings(),
+    queryFn: () => getContentSettingsSafe(),
+    retry: false,
   });
 
   const storeWhatsapp = settings?.contactWhatsapp || "918217456264";

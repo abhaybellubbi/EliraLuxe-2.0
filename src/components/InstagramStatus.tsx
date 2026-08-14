@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
 import { X, Heart, ShoppingBag, ChevronLeft, ChevronRight, CheckCircle2, Play, Pause, ExternalLink, Video } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { getInstagramStories, getInstagramPosts, getContentSettings, addOrder } from "@/lib/api";
+import {
+  getInstagramStoriesSafe,
+  getInstagramPostsSafe,
+  getContentSettingsSafe,
+  addOrder,
+} from "@/lib/api";
 import { resolveMediaUrl } from "@/lib/utils";
 import logo from "@/assets/logo.png";
 import lookbook1 from "@/assets/lookbook-1.jpg";
@@ -117,17 +121,20 @@ export function InstagramStatus() {
 
   const { data: settings } = useQuery({
     queryKey: ["contentSettings"],
-    queryFn: () => getContentSettings(),
+    queryFn: () => getContentSettingsSafe(),
+    retry: false,
   });
 
   const { data: dbStories = [] } = useQuery({
     queryKey: ["instagramStories"],
-    queryFn: () => getInstagramStories(),
+    queryFn: () => getInstagramStoriesSafe(),
+    retry: false,
   });
 
   const { data: dbPosts = [] } = useQuery({
     queryKey: ["instagramPosts"],
-    queryFn: () => getInstagramPosts(),
+    queryFn: () => getInstagramPostsSafe(),
+    retry: false,
   });
 
   const instagramUrl = settings?.contactInstagramCommunity || "https://instagram.com/elira.luxe";

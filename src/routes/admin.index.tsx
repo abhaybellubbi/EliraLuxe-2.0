@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { getProducts, getOrders } from "@/lib/api";
+import { getProductsSafe, getOrdersSafe } from "@/lib/api";
 import {
   Package,
   ShoppingBag,
@@ -20,12 +20,14 @@ export const Route = createFileRoute("/admin/")({
 function DashboardIndex() {
   const { data: products = [] } = useQuery({
     queryKey: ["products"],
-    queryFn: () => getProducts(),
+    queryFn: () => getProductsSafe(),
+    retry: false,
   });
 
   const { data: orders = [] } = useQuery({
     queryKey: ["orders"],
-    queryFn: () => getOrders(),
+    queryFn: () => getOrdersSafe(),
+    retry: false,
   });
 
   // Calculate stats

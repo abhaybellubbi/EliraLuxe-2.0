@@ -1,7 +1,7 @@
 import { SiteLayout } from "@/components/SiteLayout";
 import { ProductCard } from "@/components/ProductCard";
 import { useQuery } from "@tanstack/react-query";
-import { getProducts, getContentSettings } from "@/lib/api";
+import { getProductsSafe, getContentSettingsSafe } from "@/lib/api";
 import { Link } from "@tanstack/react-router";
 import type { Product } from "@/components/ProductCard";
 
@@ -26,7 +26,8 @@ const CATEGORY_MAP: Record<string, { to: string; label: string }> = {
 export function CategoryPage({ category, eyebrow, title, description }: Props) {
   const { data: dbProducts = [] } = useQuery({
     queryKey: ["products"],
-    queryFn: () => getProducts(),
+    queryFn: () => getProductsSafe(),
+    retry: false,
   });
 
   const {
@@ -35,7 +36,8 @@ export function CategoryPage({ category, eyebrow, title, description }: Props) {
     },
   } = useQuery({
     queryKey: ["contentSettings"],
-    queryFn: () => getContentSettings(),
+    queryFn: () => getContentSettingsSafe(),
+    retry: false,
   });
 
   const featuredCollections = settings.featuredCollections || [

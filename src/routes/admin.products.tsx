@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getProducts, updateProduct, deleteProduct } from "@/lib/api";
+import { getProductsSafe, updateProduct, deleteProduct } from "@/lib/api";
 import {
   Plus,
   Search,
@@ -55,7 +55,8 @@ function AdminProducts() {
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ["products"],
-    queryFn: () => getProducts(),
+    queryFn: () => getProductsSafe(),
+    retry: false,
   });
 
   const saveMutation = useMutation({

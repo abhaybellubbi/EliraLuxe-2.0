@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Sparkles, Layers, ShieldCheck, Plus, Check, ShoppingBag, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { getUniqueStyles, getContentSettings, addOrder } from "@/lib/api";
+import { getUniqueStylesSafe, getContentSettingsSafe, addOrder } from "@/lib/api";
 import { resolveMediaUrl } from "@/lib/utils";
 import lookbook1 from "@/assets/lookbook-1.jpg";
 import lookbook2 from "@/assets/lookbook-2.jpg";
@@ -78,17 +78,17 @@ const FALLBACK_STYLES: UniqueStyle[] = [
     id: "modern-royal-mangalsutra",
     title: "Modern Royal Mangalsutra",
     subtitle: "Everyday Heritage Fusion",
-    tagline: "Bridging timeless traditional black beads with sleek, contemporary office-wear silhouettes.",
+    tagline: "Ultra-sleek black onyx beads with 18k PVD gold solitaire pendant designed for modern wear.",
     badge: "INNOVATION #04",
     image: lookbook2,
     innovations: [
-      "Micro-facet black onyx beads",
-      "Reinforced steel wire core",
-      "Reversible drop solitaire charm",
+      "Waterproof black onyx bead wire",
+      "18k PVD Gold Solitaire centerpiece",
+      "Adjustable 16-20 inch sliding chain",
     ],
     suggestedProducts: [
-      { name: "Minimalist Drop Mangalsutra", category: "Mangalsutra" },
-      { name: "Floral Motif Mangalsutra", category: "Mangalsutra" },
+      { name: "Solitaire Royal Mangalsutra", category: "Mangalsutra" },
+      { name: "Minimalist Beaded Choker", category: "Necklaces" },
     ],
   },
 ];
@@ -99,12 +99,14 @@ export function UniqueStylesSection() {
 
   const { data: dbStyles = [] } = useQuery({
     queryKey: ["uniqueStyles"],
-    queryFn: () => getUniqueStyles(),
+    queryFn: () => getUniqueStylesSafe(),
+    retry: false,
   });
 
   const { data: settings } = useQuery({
     queryKey: ["contentSettings"],
-    queryFn: () => getContentSettings(),
+    queryFn: () => getContentSettingsSafe(),
+    retry: false,
   });
 
   const storeWhatsapp = (settings?.contactWhatsapp || "918217456264").replace(/[^0-9]/g, "");

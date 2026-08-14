@@ -3,7 +3,7 @@ import { useState } from "react";
 import { SiteLayout } from "@/components/SiteLayout";
 import { ProductCard } from "@/components/ProductCard";
 import { useQuery } from "@tanstack/react-query";
-import { getProducts, getContentSettings } from "@/lib/api";
+import { getProductsSafe, getContentSettingsSafe } from "@/lib/api";
 
 export const Route = createFileRoute("/shop/")({
   component: Shop,
@@ -34,7 +34,8 @@ export const Route = createFileRoute("/shop/")({
 function Shop() {
   const { data: dbProducts = [] } = useQuery({
     queryKey: ["products"],
-    queryFn: () => getProducts(),
+    queryFn: () => getProductsSafe(),
+    retry: false,
   });
 
   const {
@@ -43,7 +44,8 @@ function Shop() {
     },
   } = useQuery({
     queryKey: ["contentSettings"],
-    queryFn: () => getContentSettings(),
+    queryFn: () => getContentSettingsSafe(),
+    retry: false,
   });
 
   const featuredCollections = settings.featuredCollections || [

@@ -1,34 +1,38 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteLayout } from "@/components/SiteLayout";
-import logo from "@/assets/logo.jpg";
+import logo from "@/assets/logo.png";
 import reviewRupa from "@/assets/review-rupa.jpg";
 import reviewSalma from "@/assets/review-salma.jpg";
 import reviewSarah from "@/assets/review-sarah.jpg";
+import lookbook1 from "@/assets/lookbook-1.jpg";
+import lookbook2 from "@/assets/lookbook-2.jpg";
+import lookbook3 from "@/assets/lookbook-3.jpg";
+import { ShieldCheck, Sparkles, Waves, Gem, CheckCircle2, Heart } from "lucide-react";
 
 import { useQuery } from "@tanstack/react-query";
-import { getContentSettings } from "@/lib/api";
+import { getContentSettingsSafe } from "@/lib/api";
 
 export const Route = createFileRoute("/about")({
   component: About,
   head: () => ({
     meta: [
-      { title: "About — Elira Luxe" },
+      { title: "About Us — Elira Luxe" },
       {
         name: "description",
         content:
-          "Founded in 2025, Elira Luxe creates demi-fine jewellery in premium surgical stainless steel — water & tarnish resistant, made for everyday luxury.",
+          "Learn about Elira Luxe — high-lustre demi-fine jewellery in 316L surgical stainless steel & 18k PVD gold plating. Built for everyday luxury.",
       },
-      { property: "og:title", content: "About — Elira Luxe" },
+      { property: "og:title", content: "About Us — Elira Luxe" },
       {
         property: "og:description",
         content:
-          "Founded in 2025, Elira Luxe creates demi-fine jewellery in premium surgical stainless steel — water & tarnish resistant, made for everyday luxury.",
+          "Learn about Elira Luxe — high-lustre demi-fine jewellery in 316L surgical stainless steel & 18k PVD gold plating. Built for everyday luxury.",
       },
-      { name: "twitter:title", content: "About — Elira Luxe" },
+      { name: "twitter:title", content: "About Us — Elira Luxe" },
       {
         name: "twitter:description",
         content:
-          "Founded in 2025, Elira Luxe creates demi-fine jewellery in premium surgical stainless steel — water & tarnish resistant, made for everyday luxury.",
+          "Learn about Elira Luxe — high-lustre demi-fine jewellery in 316L surgical stainless steel & 18k PVD gold plating. Built for everyday luxury.",
       },
     ],
   }),
@@ -42,7 +46,8 @@ function About() {
     },
   } = useQuery({
     queryKey: ["contentSettings"],
-    queryFn: () => getContentSettings(),
+    queryFn: () => getContentSettingsSafe(),
+    retry: false,
   });
 
   return (

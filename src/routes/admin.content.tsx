@@ -2,15 +2,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  getContentSettings,
+  getContentSettingsSafe,
   updateContentSettings,
-  getUniqueStyles,
+  getUniqueStylesSafe,
   updateUniqueStyle,
   deleteUniqueStyle,
-  getInstagramStories,
+  getInstagramStoriesSafe,
   updateInstagramStory,
   deleteInstagramStory,
-  getInstagramPosts,
+  getInstagramPostsSafe,
   updateInstagramPost,
   deleteInstagramPost,
 } from "@/lib/api";
@@ -67,25 +67,29 @@ function AdminContent() {
   // Content Settings Query
   const { data: settings, isLoading } = useQuery({
     queryKey: ["contentSettings"],
-    queryFn: () => getContentSettings(),
+    queryFn: () => getContentSettingsSafe(),
+    retry: false,
   });
 
   // Unique Styles Query
   const { data: dbUniqueStyles = [] } = useQuery({
     queryKey: ["uniqueStyles"],
-    queryFn: () => getUniqueStyles(),
+    queryFn: () => getUniqueStylesSafe(),
+    retry: false,
   });
 
   // Instagram Stories Query
   const { data: dbInstagramStories = [] } = useQuery({
     queryKey: ["instagramStories"],
-    queryFn: () => getInstagramStories(),
+    queryFn: () => getInstagramStoriesSafe(),
+    retry: false,
   });
 
   // Instagram Posts Query
   const { data: dbInstagramPosts = [] } = useQuery({
     queryKey: ["instagramPosts"],
-    queryFn: () => getInstagramPosts(),
+    queryFn: () => getInstagramPostsSafe(),
+    retry: false,
   });
 
   // Form states for Settings

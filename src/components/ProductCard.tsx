@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { addOrder, getContentSettings } from "@/lib/api";
+import { useState, useRef, useEffect } from "react";
+import { addOrder, getContentSettingsSafe } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -67,7 +67,8 @@ export function ProductCard({ product }: { product: Product }) {
 
   const { data: settings } = useQuery({
     queryKey: ["contentSettings"],
-    queryFn: () => getContentSettings(),
+    queryFn: () => getContentSettingsSafe(),
+    retry: false,
   });
 
   const storeWhatsapp = (settings?.contactWhatsapp || "918217456264").replace(/[^0-9]/g, "");

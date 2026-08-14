@@ -18,7 +18,7 @@ import {
   ExternalLink,
   Info,
 } from "lucide-react";
-import { getProducts } from "@/lib/api";
+import { getProductsSafe } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 
 interface RecommendationItem {
@@ -72,7 +72,8 @@ export function AIChatBot() {
 
   const { data: dbProducts = [] } = useQuery({
     queryKey: ["products"],
-    queryFn: () => getProducts(),
+    queryFn: () => getProductsSafe(),
+    retry: false,
   });
 
   const productsList = Array.isArray(dbProducts) ? dbProducts : [];

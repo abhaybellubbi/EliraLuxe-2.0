@@ -8,10 +8,11 @@ export const Route = createFileRoute("/contact")({
   component: Contact,
   head: () => ({
     meta: [
-      { title: "Contact — Elira Luxe" },
+      { title: "Contact Us — Elira Luxe" },
       {
         name: "description",
-        content: "Get in touch with Elira Luxe for orders, styling and enquiries.",
+        content:
+          "Get in touch with Elira Luxe for customer service, order enquiries, styling assistance, or WhatsApp community support.",
       },
       { property: "og:title", content: "Contact — Elira Luxe" },
       {
@@ -37,7 +38,8 @@ function Contact() {
     },
   } = useQuery({
     queryKey: ["contentSettings"],
-    queryFn: () => getContentSettings(),
+    queryFn: () => getContentSettingsSafe(),
+    retry: false,
   });
 
   return (
