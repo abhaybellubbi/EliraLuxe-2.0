@@ -44,12 +44,26 @@ export function ProductCard({ product }: { product: Product }) {
   const [rotateY, setRotateY] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
 
-  // 3D Hologram Modal state
   const [is3DModalOpen, setIs3DModalOpen] = useState(false);
   const [orbitAngle, setOrbitAngle] = useState(0);
   const [autoRotate, setAutoRotate] = useState(true);
 
   const cardRef = useRef<HTMLDivElement>(null);
+
+  // Smooth 360 degree continuous auto-orbit animation loop
+  useEffect(() => {
+    let animFrameId: number;
+    if (is3DModalOpen && autoRotate) {
+      const loop = () => {
+        setOrbitAngle((prev) => (prev + 1) % 360);
+        animFrameId = requestAnimationFrame(loop);
+      };
+      animFrameId = requestAnimationFrame(loop);
+    }
+    return () => {
+      if (animFrameId) cancelAnimationFrame(animFrameId);
+    };
+  }, [is3DModalOpen, autoRotate]);
 
   const { data: settings } = useQuery({
     queryKey: ["contentSettings"],
@@ -282,9 +296,9 @@ export function ProductCard({ product }: { product: Product }) {
               {/* 3D Product Image Card */}
               <div
                 style={{
-                  transform: autoRotate
-                    ? `rotateY(${orbitAngle}deg) rotateX(10deg)`
-                    : `rotateY(${orbitAngle}deg)`,
+                  transform: `perspective(1000px) rotateY(${orbitAngle}deg) rotateX(${
+                    Math.sin((orbitAngle * Math.PI) / 180) * 10
+                  }deg)`,
                   transition: autoRotate ? "none" : "transform 0.2s ease-out",
                   transformStyle: "preserve-3d",
                 }}
