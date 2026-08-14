@@ -33,31 +33,31 @@ function NotFoundComponent() {
 }
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
-  console.error(error);
+  console.error("Root ErrorComponent caught:", error);
   const router = useRouter();
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
+      <div className="max-w-md text-center space-y-4">
+        <h1 className="text-2xl font-display font-semibold tracking-tight text-foreground">
           This page didn't load
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          {error?.message || "Something went wrong on our end. You can try refreshing or head back home."}
         </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
+        <div className="mt-4 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {
               router.invalidate();
               reset();
             }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex items-center justify-center rounded-full bg-gradient-gold px-5 py-2.5 text-xs font-bold text-primary-foreground uppercase tracking-wider shadow-md hover:opacity-90 transition"
           >
             Try again
           </button>
           <a
             href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+            className="inline-flex items-center justify-center rounded-full border border-border px-5 py-2.5 text-xs font-bold text-foreground uppercase tracking-wider hover:border-gold hover:text-gold-deep transition"
           >
             Go home
           </a>
@@ -68,6 +68,16 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 import logo from "../assets/logo.png";
+
+const getMediaString = (val: any): string => {
+  if (!val) return "";
+  if (typeof val === "string") return val;
+  if (typeof val === "object" && typeof val.src === "string") return val.src;
+  if (typeof val === "object" && typeof val.default === "string") return val.default;
+  return String(val);
+};
+
+const logoUrl = getMediaString(logo);
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
@@ -96,17 +106,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       {
         property: "og:image",
-        content: logo,
+        content: logoUrl,
       },
       {
         name: "twitter:image",
-        content: logo,
+        content: logoUrl,
       },
     ],
     links: [
-      { rel: "icon", type: "image/png", href: logo },
-      { rel: "shortcut icon", href: logo },
-      { rel: "apple-touch-icon", href: logo },
+      { rel: "icon", type: "image/png", href: logoUrl },
+      { rel: "shortcut icon", href: logoUrl },
+      { rel: "apple-touch-icon", href: logoUrl },
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
