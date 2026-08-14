@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { X, Heart, ShoppingBag, ChevronLeft, ChevronRight, CheckCircle2, Play, Pause, ExternalLink, Video } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import {
   getInstagramStoriesSafe,
   getInstagramPostsSafe,
