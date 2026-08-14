@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { SiteLayout } from "@/components/SiteLayout";
 
 import { useQuery } from "@tanstack/react-query";
-import { getContentSettings } from "@/lib/api";
+import { getContentSettingsSafe } from "@/lib/api";
 
 export const Route = createFileRoute("/contact")({
   component: Contact,
