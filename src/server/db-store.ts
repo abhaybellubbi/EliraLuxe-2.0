@@ -354,13 +354,13 @@ export async function readDb(): Promise<DatabaseSchema> {
 
   // 1. Try reading from Supabase cloud database
   try {
-    const { data: supaData } = await supabase
+    const { data: supaData, error: supaErr } = await supabase
       .from("elira_store_state")
       .select("payload")
       .eq("id", 1)
       .maybeSingle();
 
-    if (supaData && supaData.payload) {
+    if (!supaErr && supaData && supaData.payload) {
       const payload = supaData.payload as Partial<DatabaseSchema>;
       cachedDb = {
         products: Array.isArray(payload.products) && payload.products.length > 0 ? payload.products : initial.products,
@@ -377,41 +377,40 @@ export async function readDb(): Promise<DatabaseSchema> {
     console.log("Supabase cloud sync notice (falling back to disk):", supaErr);
   }
 
-  // 2. Fallback to Disk JSON Storage
+  // 2. Try reading from Disk JSON Storage (bulletproof serverless fallback)
   try {
-    if (IS_SERVERLESS) {
+    let rawContent: string | null = null;
+
+    try {
+      rawContent = await fs.readFile(DB_FILE, "utf-8");
+    } catch {
       try {
-        await fs.access(DB_FILE);
+        rawContent = await fs.readFile(ORIGINAL_DB_FILE, "utf-8");
       } catch {
-        const originalData = await fs.readFile(ORIGINAL_DB_FILE, "utf-8");
-        await fs.writeFile(DB_FILE, originalData, "utf-8");
+        rawContent = null;
       }
     }
 
-    const data = await fs.readFile(DB_FILE, "utf-8");
-    const parsed = JSON.parse(data) as Partial<DatabaseSchema>;
-
-    cachedDb = {
-      products: Array.isArray(parsed.products) && parsed.products.length > 0 ? parsed.products : initial.products,
-      promotions: Array.isArray(parsed.promotions) ? parsed.promotions : [],
-      contentSettings: parsed.contentSettings || initial.contentSettings,
-      orders: Array.isArray(parsed.orders) ? parsed.orders : [],
-      uniqueStyles: Array.isArray(parsed.uniqueStyles) && parsed.uniqueStyles.length > 0 ? parsed.uniqueStyles : initial.uniqueStyles,
-      instagramStories: Array.isArray(parsed.instagramStories) && parsed.instagramStories.length > 0 ? parsed.instagramStories : initial.instagramStories,
-      instagramPosts: Array.isArray(parsed.instagramPosts) && parsed.instagramPosts.length > 0 ? parsed.instagramPosts : initial.instagramPosts,
-    };
-
-    return cachedDb;
-  } catch (error) {
-    console.error("Failed to read database file, initializing:", error);
-    cachedDb = initial;
-    try {
-      await fs.writeFile(DB_FILE, JSON.stringify(initial, null, 2), "utf-8");
-    } catch (writeErr) {
-      console.error("Failed to initialize database file on disk:", writeErr);
+    if (rawContent) {
+      const parsed = JSON.parse(rawContent) as Partial<DatabaseSchema>;
+      cachedDb = {
+        products: Array.isArray(parsed.products) && parsed.products.length > 0 ? parsed.products : initial.products,
+        promotions: Array.isArray(parsed.promotions) ? parsed.promotions : [],
+        contentSettings: parsed.contentSettings || initial.contentSettings,
+        orders: Array.isArray(parsed.orders) ? parsed.orders : [],
+        uniqueStyles: Array.isArray(parsed.uniqueStyles) && parsed.uniqueStyles.length > 0 ? parsed.uniqueStyles : initial.uniqueStyles,
+        instagramStories: Array.isArray(parsed.instagramStories) && parsed.instagramStories.length > 0 ? parsed.instagramStories : initial.instagramStories,
+        instagramPosts: Array.isArray(parsed.instagramPosts) && parsed.instagramPosts.length > 0 ? parsed.instagramPosts : initial.instagramPosts,
+      };
+      return cachedDb;
     }
-    return cachedDb;
+  } catch (error) {
+    console.log("Disk read notice (falling back to in-memory initial):", error);
   }
+
+  // 3. Guaranteed Safe Fallback: Return in-memory initial schema
+  cachedDb = initial;
+  return cachedDb;
 }
 
 export async function writeDb(data: DatabaseSchema): Promise<void> {
@@ -428,15 +427,10 @@ export async function writeDb(data: DatabaseSchema): Promise<void> {
     console.log("Supabase write notice:", supaErr);
   }
 
-  // 2. Write to local file on disk
-  writePromise = writePromise.then(async () => {
-    try {
-      await fs.writeFile(DB_FILE, JSON.stringify(data, null, 2), "utf-8");
-    } catch (err) {
-      console.error("Failed to write database file:", err);
-      throw err;
-    }
-  });
-
-  await writePromise;
+  // 2. Write to local file on disk (never crash serverless worker if write fails)
+  try {
+    await fs.writeFile(DB_FILE, JSON.stringify(data, null, 2), "utf-8");
+  } catch (err) {
+    console.log("Disk write notice (ignored in serverless):", err);
+  }
 }
