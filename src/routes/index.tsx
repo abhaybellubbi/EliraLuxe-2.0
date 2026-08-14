@@ -66,7 +66,9 @@ function Index() {
   const activePromos = dbPromotions.filter((p: any) => {
     const isExplicitlyActive = p.active === true || p.active === "true";
     if (!isExplicitlyActive) return false;
-    if (p.endTime && new Date(p.endTime).getTime() < Date.now()) return false;
+    const now = Date.now();
+    if (p.startTime && new Date(p.startTime).getTime() > now) return false;
+    if (p.endTime && new Date(p.endTime).getTime() <= now) return false;
     return true;
   });
 

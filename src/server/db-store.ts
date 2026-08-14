@@ -35,6 +35,7 @@ export interface Promotion {
   discountValue?: string;
   active: boolean;
   imageUrl?: string;
+  startTime?: string;
   endTime?: string;
 }
 

@@ -45,6 +45,7 @@ function AdminPromotions() {
   const [discountValue, setDiscountValue] = useState("");
   const [active, setActive] = useState(true);
   const [imageUrl, setImageUrl] = useState("");
+  const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
 
   const { data: promotions = [], isLoading } = useQuery({
@@ -105,12 +106,20 @@ function AdminPromotions() {
       setActive(promo.active);
       setImageUrl(promo.imageUrl || "");
 
+      const pad = (num: number) => num.toString().padStart(2, "0");
+      const toLocalDatetime = (isoStr: string) => {
+        const d = new Date(isoStr);
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      };
+
+      if (promo.startTime) {
+        setStartTime(toLocalDatetime(promo.startTime));
+      } else {
+        setStartTime("");
+      }
+
       if (promo.endTime) {
-        // Format ISO string to datetime-local input format: YYYY-MM-DDTHH:MM
-        const date = new Date(promo.endTime);
-        const pad = (num: number) => num.toString().padStart(2, "0");
-        const formattedDate = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-        setEndTime(formattedDate);
+        setEndTime(toLocalDatetime(promo.endTime));
       } else {
         setEndTime("");
       }
@@ -123,6 +132,7 @@ function AdminPromotions() {
       setDiscountValue("");
       setActive(true);
       setImageUrl("");
+      setStartTime("");
       setEndTime("");
     }
     setIsModalOpen(true);
@@ -150,6 +160,7 @@ function AdminPromotions() {
       discountValue: discountValue || undefined,
       active,
       imageUrl: imageUrl || undefined,
+      startTime: startTime ? new Date(startTime).toISOString() : undefined,
       endTime: endTime ? new Date(endTime).toISOString() : undefined,
     };
 
@@ -307,7 +318,7 @@ function AdminPromotions() {
                   </p>
                 </div>
 
-                {/* Promo specs */}
+                {/* Promo specs & Schedule indicators */}
                 <div className="pt-2 flex flex-wrap gap-2">
                   {promo.code && (
                     <div className="px-2.5 py-1 rounded bg-gold/10 border border-gold/25 text-xs text-gold font-mono">
@@ -319,10 +330,23 @@ function AdminPromotions() {
                       Value: {promo.discountValue}
                     </div>
                   )}
-                  {promo.endTime && (
-                    <div className="px-2.5 py-1 rounded bg-red-500/5 border border-red-500/20 text-xs text-red-400 flex items-center gap-1.5 font-medium">
+                  {promo.startTime && (
+                    <div className="px-2.5 py-1 rounded bg-blue-500/10 border border-blue-500/25 text-xs text-blue-300 flex items-center gap-1.5 font-medium">
                       <Calendar className="h-3 w-3" />
-                      <span>Ends: {new Date(promo.endTime).toLocaleDateString()}</span>
+                      <span>Starts: {new Date(promo.startTime).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                  )}
+                  {promo.endTime && (
+                    <div className={`px-2.5 py-1 rounded border text-xs flex items-center gap-1.5 font-medium ${
+                      new Date(promo.endTime).getTime() <= Date.now()
+                        ? "bg-red-500/10 border-red-500/30 text-red-400"
+                        : "bg-amber-500/10 border-amber-500/25 text-amber-300"
+                    }`}>
+                      <Calendar className="h-3 w-3" />
+                      <span>
+                        {new Date(promo.endTime).getTime() <= Date.now() ? "Expired: " : "Ends: "}
+                        {new Date(promo.endTime).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -456,19 +480,42 @@ function AdminPromotions() {
                 />
               </div>
 
-              {type === "flash_sale" && (
-                <div className="space-y-1 animate-fade-in">
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
-                    Countdown End Time
-                  </label>
-                  <input
-                    type="datetime-local"
-                    value={endTime}
-                    onChange={(e) => setEndTime(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl bg-ink/50 border border-gold/10 focus:border-gold text-cream text-sm outline-none transition"
-                  />
+              {/* Automatic Scheduling & Expiry */}
+              <div className="p-3.5 rounded-xl bg-ink/30 border border-gold/10 space-y-3">
+                <div className="flex flex-col">
+                  <span className="text-xs uppercase tracking-wider text-gold font-semibold flex items-center gap-1.5">
+                    <Calendar className="h-3.5 w-3.5" />
+                    Automatic Schedule & Expiry
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">
+                    Set start/end dates for automatic publishing and auto-disabling.
+                  </span>
                 </div>
-              )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+                      Start Time (Optional)
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={startTime}
+                      onChange={(e) => setStartTime(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg bg-ink/70 border border-gold/10 focus:border-gold text-cream text-xs outline-none transition"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+                      End Time (Optional)
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={endTime}
+                      onChange={(e) => setEndTime(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg bg-ink/70 border border-gold/10 focus:border-gold text-cream text-xs outline-none transition"
+                    />
+                  </div>
+                </div>
+              </div>
 
               {/* Status Switch */}
               <div className="flex items-center justify-between p-3 rounded-xl bg-ink/30 border border-gold/5 mt-2">
