@@ -40,11 +40,6 @@ function Index() {
     queryFn: () => getProducts(),
   });
 
-  const { data: dbPromotions = [] } = useQuery({
-    queryKey: ["promotions"],
-    queryFn: () => getPromotions(),
-  });
-
   const {
     data: settings = {
       heroTitle: "Illuminate",
@@ -63,52 +58,12 @@ function Index() {
     queryFn: () => getContentSettings(),
   });
 
-  const promosList = Array.isArray(dbPromotions) ? dbPromotions : [];
-  const activePromos = promosList.filter((p: any) => {
-    if (!p) return false;
-    const isExplicitlyActive = p.active === true || p.active === "true";
-    if (!isExplicitlyActive) return false;
-    const now = Date.now();
-    if (p.startTime) {
-      const startTimeMs = new Date(p.startTime).getTime();
-      if (!isNaN(startTimeMs) && startTimeMs > now) return false;
-    }
-    if (p.endTime) {
-      const endTimeMs = new Date(p.endTime).getTime();
-      if (!isNaN(endTimeMs) && endTimeMs <= now) return false;
-    }
-    return true;
-  });
-
   // Show active products first (limit to 6)
   const productsList = Array.isArray(dbProducts) ? dbProducts : [];
   const featured = productsList.filter((p: any) => p && p.stockStatus !== "out_of_stock").slice(0, 6);
 
   return (
     <SiteLayout>
-      {/* Active Promotion Bar */}
-      {activePromos.length > 0 && (
-        <div className="w-full bg-gradient-gold text-primary-foreground py-2.5 px-4 text-center text-xs font-semibold uppercase tracking-[0.2em] relative z-10 shadow-sm animate-fade-in">
-          <div className="max-w-7xl mx-auto flex items-center justify-center gap-6 overflow-x-auto whitespace-nowrap scrollbar-none">
-            {activePromos.map((promo: any) => (
-              <span key={promo.id} className="inline-flex items-center gap-2">
-                <span>✦</span>
-                <span>
-                  {promo.title}: {promo.description}
-                  {promo.code ? ` (CODE: ${promo.code})` : ""}
-                </span>
-                {promo.type === "flash_sale" && promo.endTime && (
-                  <span className="bg-ink/30 text-cream px-2 py-0.5 rounded text-[10px]">
-                    Flash Sale
-                  </span>
-                )}
-              </span>
-            ))}
-            <span>✦</span>
-          </div>
-        </div>
-      )}
-
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-cream via-background to-secondary" />

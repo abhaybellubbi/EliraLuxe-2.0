@@ -77,7 +77,6 @@ function AdminLayout() {
   const menuItems = [
     { to: "/admin", label: "Dashboard", icon: LayoutDashboard },
     { to: "/admin/products", label: "Products & Stock", icon: ShoppingBag },
-    { to: "/admin/promotions", label: "Promotions & Codes", icon: Tag },
     { to: "/admin/content", label: "Content Editor", icon: FileText },
     { to: "/admin/orders", label: "WhatsApp Enquiries", icon: CheckSquare },
   ];

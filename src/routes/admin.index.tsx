@@ -1,10 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { getProducts, getPromotions, getOrders } from "@/lib/api";
+import { getProducts, getOrders } from "@/lib/api";
 import {
   Package,
   ShoppingBag,
-  Tag,
   ShoppingCart,
   AlertTriangle,
   ArrowRight,
@@ -22,11 +21,6 @@ function DashboardIndex() {
   const { data: products = [] } = useQuery({
     queryKey: ["products"],
     queryFn: () => getProducts(),
-  });
-
-  const { data: promotions = [] } = useQuery({
-    queryKey: ["promotions"],
-    queryFn: () => getPromotions(),
   });
 
   const { data: orders = [] } = useQuery({
@@ -56,7 +50,6 @@ function DashboardIndex() {
     !p.name.toLowerCase().includes("gold")
   );
 
-  const activePromotions = promotions.filter((p: any) => p.active === true || p.active === "true").length;
   const totalOrders = orders.length;
 
   // Items requiring attention (out of stock or limited stock)
@@ -86,12 +79,6 @@ function DashboardIndex() {
       value: surgicalSteelProducts.length,
       icon: ShieldCheck,
       color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
-    },
-    {
-      label: "Active Promos",
-      value: activePromotions,
-      icon: Tag,
-      color: "text-purple-400 bg-purple-500/10 border-purple-500/20",
     },
     {
       label: "WhatsApp Orders",
@@ -265,13 +252,6 @@ function DashboardIndex() {
                 className="flex items-center justify-between p-3.5 rounded-xl border border-gold/10 hover:border-gold hover:bg-gold/5 text-sm transition"
               >
                 <span>Add New Product</span>
-                <ArrowRight className="h-4 w-4 text-gold" />
-              </Link>
-              <Link
-                to="/admin/promotions"
-                className="flex items-center justify-between p-3.5 rounded-xl border border-gold/10 hover:border-gold hover:bg-gold/5 text-sm transition"
-              >
-                <span>Create Discount Promo</span>
                 <ArrowRight className="h-4 w-4 text-gold" />
               </Link>
               <Link
