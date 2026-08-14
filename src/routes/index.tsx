@@ -63,7 +63,12 @@ function Index() {
     queryFn: () => getContentSettings(),
   });
 
-  const activePromos = dbPromotions.filter((p: any) => p.active);
+  const activePromos = dbPromotions.filter((p: any) => {
+    const isExplicitlyActive = p.active === true || p.active === "true";
+    if (!isExplicitlyActive) return false;
+    if (p.endTime && new Date(p.endTime).getTime() < Date.now()) return false;
+    return true;
+  });
 
   // Show active products first (limit to 6)
   const featured = dbProducts.filter((p: any) => p.stockStatus !== "out_of_stock").slice(0, 6);

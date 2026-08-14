@@ -56,7 +56,7 @@ function DashboardIndex() {
     !p.name.toLowerCase().includes("gold")
   );
 
-  const activePromotions = promotions.filter((p: any) => p.active).length;
+  const activePromotions = promotions.filter((p: any) => p.active === true || p.active === "true").length;
   const totalOrders = orders.length;
 
   // Items requiring attention (out of stock or limited stock)

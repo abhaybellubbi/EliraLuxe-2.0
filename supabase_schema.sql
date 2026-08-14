@@ -20,7 +20,8 @@ CREATE POLICY "Allow public read access to elira_store_state"
 
 CREATE POLICY "Allow public write/update access to elira_store_state"
   ON public.elira_store_state FOR ALL
-  USING (true);
+  USING (true)
+  WITH CHECK (true);
 
 -- 2. Optional Relational Tables (if desired)
 CREATE TABLE IF NOT EXISTS public.products (

@@ -80,7 +80,10 @@ function AdminPromotions() {
   });
 
   const toggleActiveMutation = useMutation({
-    mutationFn: (promo: any) => updatePromotion({ data: { ...promo, active: !promo.active } }),
+    mutationFn: (promo: any) => {
+      const isCurrentlyActive = promo.active === true || promo.active === "true";
+      return updatePromotion({ data: { ...promo, active: !isCurrentlyActive } });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["promotions"] });
       toast.success("Promotion status updated");
@@ -173,6 +176,8 @@ function AdminPromotions() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
 
+  const isPromoActive = (p: any) => p.active === true || p.active === "true";
+
   const filteredPromotions = promotions.filter((promo: any) => {
     const matchesSearch =
       promo.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -180,8 +185,9 @@ function AdminPromotions() {
       (promo.code && promo.code.toLowerCase().includes(searchQuery.toLowerCase()));
 
     if (!matchesSearch) return false;
-    if (statusFilter === "active") return promo.active;
-    if (statusFilter === "inactive") return !promo.active;
+    const activeState = isPromoActive(promo);
+    if (statusFilter === "active") return activeState;
+    if (statusFilter === "inactive") return !activeState;
     return true;
   });
 
@@ -227,7 +233,7 @@ function AdminPromotions() {
                 : "bg-ink/50 text-muted-foreground hover:text-cream border border-white/5"
             }`}
           >
-            Active ({promotions.filter((p: any) => p.active).length})
+            Active ({promotions.filter(isPromoActive).length})
           </button>
           <button
             onClick={() => setStatusFilter("inactive")}
@@ -237,7 +243,7 @@ function AdminPromotions() {
                 : "bg-ink/50 text-muted-foreground hover:text-cream border border-white/5"
             }`}
           >
-            Inactive ({promotions.filter((p: any) => !p.active).length})
+            Inactive ({promotions.filter((p: any) => !isPromoActive(p)).length})
           </button>
         </div>
 

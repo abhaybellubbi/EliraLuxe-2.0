@@ -1168,7 +1168,7 @@
       "description": "Exclusive discounts on 18k Gold Plated Kada & Pendant Stacks",
       "code": "ELIRA15",
       "discountValue": "15%",
-      "active": true
+      "active": false
     }
   ],
   "orders": []
