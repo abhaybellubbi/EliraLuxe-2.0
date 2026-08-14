@@ -1160,16 +1160,6 @@
       "tag": "Emerald Luxe Statement"
     }
   ],
-  "promotions": [
-    {
-      "id": "promo-1",
-      "title": "SPRING FESTIVAL SALE",
-      "type": "flash_sale",
-      "description": "Exclusive discounts on 18k Gold Plated Kada & Pendant Stacks",
-      "code": "ELIRA15",
-      "discountValue": "15%",
-      "active": false
-    }
-  ],
+  "promotions": [],
   "orders": []
 }

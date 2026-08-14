@@ -134,17 +134,7 @@ export function getInitialData(): DatabaseSchema {
     stockStatus: p.stockStatus as any,
   }));
 
-  const promotions: Promotion[] = [
-    {
-      id: "promo-1",
-      title: "SPRING FESTIVAL SALE",
-      type: "flash_sale",
-      description: "Exclusive discounts on 18k Gold Plated Kada & Pendant Stacks",
-      code: "ELIRA15",
-      discountValue: "15%",
-      active: false,
-    },
-  ];
+  const promotions: Promotion[] = [];
 
   const contentSettings: ContentSettings = {
     heroTitle: "Illuminate",
