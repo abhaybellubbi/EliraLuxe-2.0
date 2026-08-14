@@ -4,7 +4,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { InstagramStatus } from "@/components/InstagramStatus";
 import { UniqueStylesSection } from "@/components/UniqueStylesSection";
 import { useQuery } from "@tanstack/react-query";
-import { getProducts, getPromotions, getContentSettings } from "@/lib/api";
+import { getProducts, getContentSettings } from "@/lib/api";
 import heroImage from "@/assets/marketing-hero-3d.png";
 import { ShieldCheck, Sparkles, Waves, Gem, ArrowRight, MessageCircle } from "lucide-react";
 
