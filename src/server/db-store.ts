@@ -350,6 +350,8 @@ export function getInitialData(): DatabaseSchema {
 export async function readDb(): Promise<DatabaseSchema> {
   if (cachedDb) return cachedDb;
 
+  const initial = getInitialData();
+
   // 1. Try reading from Supabase cloud database
   try {
     const { data: supaData } = await supabase
@@ -359,9 +361,16 @@ export async function readDb(): Promise<DatabaseSchema> {
       .maybeSingle();
 
     if (supaData && supaData.payload) {
-      cachedDb = supaData.payload as DatabaseSchema;
-      if (!cachedDb.promotions) cachedDb.promotions = getInitialData().promotions;
-      if (!cachedDb.orders) cachedDb.orders = [];
+      const payload = supaData.payload as Partial<DatabaseSchema>;
+      cachedDb = {
+        products: Array.isArray(payload.products) && payload.products.length > 0 ? payload.products : initial.products,
+        promotions: Array.isArray(payload.promotions) ? payload.promotions : [],
+        contentSettings: payload.contentSettings || initial.contentSettings,
+        orders: Array.isArray(payload.orders) ? payload.orders : [],
+        uniqueStyles: Array.isArray(payload.uniqueStyles) && payload.uniqueStyles.length > 0 ? payload.uniqueStyles : initial.uniqueStyles,
+        instagramStories: Array.isArray(payload.instagramStories) && payload.instagramStories.length > 0 ? payload.instagramStories : initial.instagramStories,
+        instagramPosts: Array.isArray(payload.instagramPosts) && payload.instagramPosts.length > 0 ? payload.instagramPosts : initial.instagramPosts,
+      };
       return cachedDb;
     }
   } catch (supaErr) {
@@ -380,31 +389,24 @@ export async function readDb(): Promise<DatabaseSchema> {
     }
 
     const data = await fs.readFile(DB_FILE, "utf-8");
-    cachedDb = JSON.parse(data);
+    const parsed = JSON.parse(data) as Partial<DatabaseSchema>;
 
-    if (!cachedDb!.promotions) {
-      cachedDb!.promotions = getInitialData().promotions;
-    }
-    if (!cachedDb!.orders) {
-      cachedDb!.orders = [];
-    }
-    if (!cachedDb!.uniqueStyles || cachedDb!.uniqueStyles.length === 0) {
-      cachedDb!.uniqueStyles = getInitialData().uniqueStyles;
-    }
-    if (!cachedDb!.instagramStories || cachedDb!.instagramStories.length === 0) {
-      cachedDb!.instagramStories = getInitialData().instagramStories;
-    }
-    if (!cachedDb!.instagramPosts || cachedDb!.instagramPosts.length === 0) {
-      cachedDb!.instagramPosts = getInitialData().instagramPosts;
-    }
+    cachedDb = {
+      products: Array.isArray(parsed.products) && parsed.products.length > 0 ? parsed.products : initial.products,
+      promotions: Array.isArray(parsed.promotions) ? parsed.promotions : [],
+      contentSettings: parsed.contentSettings || initial.contentSettings,
+      orders: Array.isArray(parsed.orders) ? parsed.orders : [],
+      uniqueStyles: Array.isArray(parsed.uniqueStyles) && parsed.uniqueStyles.length > 0 ? parsed.uniqueStyles : initial.uniqueStyles,
+      instagramStories: Array.isArray(parsed.instagramStories) && parsed.instagramStories.length > 0 ? parsed.instagramStories : initial.instagramStories,
+      instagramPosts: Array.isArray(parsed.instagramPosts) && parsed.instagramPosts.length > 0 ? parsed.instagramPosts : initial.instagramPosts,
+    };
 
-    return cachedDb!;
+    return cachedDb;
   } catch (error) {
     console.error("Failed to read database file, initializing:", error);
-    const initialData = getInitialData();
-    cachedDb = initialData;
+    cachedDb = initial;
     try {
-      await fs.writeFile(DB_FILE, JSON.stringify(initialData, null, 2), "utf-8");
+      await fs.writeFile(DB_FILE, JSON.stringify(initial, null, 2), "utf-8");
     } catch (writeErr) {
       console.error("Failed to initialize database file on disk:", writeErr);
     }
