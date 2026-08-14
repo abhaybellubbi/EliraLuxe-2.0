@@ -142,8 +142,7 @@ export function getInitialData(): DatabaseSchema {
       description: "Exclusive discounts on 18k Gold Plated Kada & Pendant Stacks",
       code: "ELIRA15",
       discountValue: "15%",
-      active: true,
-      endTime: new Date(Date.now() + 86400000 * 3).toISOString(),
+      active: false,
     },
   ];
 

@@ -130,7 +130,7 @@ function AdminPromotions() {
       setDescription("");
       setCode("");
       setDiscountValue("");
-      setActive(true);
+      setActive(false);
       setImageUrl("");
       setStartTime("");
       setEndTime("");
