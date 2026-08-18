@@ -3,7 +3,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Moon, Sun, Menu, X } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { useQuery } from "@tanstack/react-query";
-import { getContentSettingsSafe } from "@/lib/api";
+import { getContentSettingsSafe, addOrderSafe } from "@/lib/api";
 import { SplashScreen } from "./SplashScreen";
 import { AIChatBot } from "./AIChatBot";
 
@@ -220,6 +220,14 @@ export function SiteLayout({ children }: { children: ReactNode }) {
               <li>
                 <a
                   href={`https://wa.me/${settings.contactWhatsapp}`}
+                  onClick={() =>
+                    addOrderSafe({
+                      customerName: "Footer Visitor (WhatsApp)",
+                      customerPhone: `+${settings.contactWhatsapp}`,
+                      productId: "footer_direct",
+                      productName: "Footer WhatsApp Contact Enquiry",
+                    })
+                  }
                   target="_blank"
                   rel="noreferrer"
                   className="hover:text-gold"

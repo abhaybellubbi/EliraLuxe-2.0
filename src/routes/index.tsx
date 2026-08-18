@@ -4,7 +4,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { InstagramStatus } from "@/components/InstagramStatus";
 import { UniqueStylesSection } from "@/components/UniqueStylesSection";
 import { useQuery } from "@tanstack/react-query";
-import { getProductsSafe, getContentSettingsSafe } from "@/lib/api";
+import { getProductsSafe, getContentSettingsSafe, addOrderSafe } from "@/lib/api";
 import heroImage from "@/assets/marketing-hero-3d.png";
 import { ShieldCheck, Sparkles, Waves, Gem, ArrowRight, MessageCircle } from "lucide-react";
 
@@ -261,6 +261,14 @@ function Index() {
                 href={`https://wa.me/918217456264?text=${encodeURIComponent(
                   "Hi Elira Luxe! I am visiting your site and would like styling recommendations."
                 )}`}
+                onClick={() =>
+                  addOrderSafe({
+                    customerName: "VIP Concierge Lead (WhatsApp)",
+                    customerPhone: "Not Provided (WhatsApp Lead)",
+                    productId: "concierge_hero",
+                    productName: "VIP Concierge Styling Enquiry",
+                  })
+                }
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-gradient-gold text-primary-foreground font-bold text-xs uppercase tracking-wider shadow-xl hover:scale-105 transition"

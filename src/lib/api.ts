@@ -370,3 +370,26 @@ export const getOrdersSafe = async (): Promise<Order[]> => {
     return [];
   }
 };
+
+export const addOrderSafe = async (orderData: {
+  customerName?: string;
+  customerPhone?: string;
+  productId: string;
+  productName: string;
+}): Promise<{ success: boolean; order?: Order }> => {
+  try {
+    const res = await addOrder({
+      data: {
+        customerName: orderData.customerName || "WhatsApp Lead",
+        customerPhone: orderData.customerPhone || "Not Provided (WhatsApp Lead)",
+        productId: orderData.productId,
+        productName: orderData.productName,
+      },
+    });
+    return res;
+  } catch (err) {
+    console.warn("addOrderSafe fallback notice:", err);
+    return { success: false };
+  }
+};
+

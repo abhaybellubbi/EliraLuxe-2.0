@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Flame, Tag, ShoppingBag, ArrowRight, Eye, CheckCircle, Sparkles } from "lucide-react";
+import { addOrderSafe } from "@/lib/api";
 import lookbook1 from "@/assets/lookbook-1.jpg";
 import lookbook2 from "@/assets/lookbook-2.jpg";
 import lookbook3 from "@/assets/lookbook-3.jpg";
@@ -238,6 +239,14 @@ export function TrendingLooksSection() {
                             href={`https://wa.me/918217456264?text=${encodeURIComponent(
                               `Hi Elira Luxe! I want to enquire about "${item.name}" from your Trending Looks feature.`
                             )}`}
+                            onClick={() =>
+                              addOrderSafe({
+                                customerName: "Trending Looks Lead (WhatsApp)",
+                                customerPhone: "Not Provided (WhatsApp Lead)",
+                                productId: item.id,
+                                productName: item.name,
+                              })
+                            }
                             target="_blank"
                             rel="noreferrer"
                             className="w-full py-1.5 rounded-full bg-gradient-gold text-primary-foreground text-[11px] font-bold flex items-center justify-center gap-1 shadow"
@@ -306,6 +315,14 @@ export function TrendingLooksSection() {
                   href={`https://wa.me/918217456264?text=${encodeURIComponent(
                     `Hi! I would like to order the complete look "${look.title}" from Trending Looks.`
                   )}`}
+                  onClick={() =>
+                    addOrderSafe({
+                      customerName: "Trending Looks Lead (WhatsApp)",
+                      customerPhone: "Not Provided (WhatsApp Lead)",
+                      productId: look.id,
+                      productName: `Complete Look: ${look.title}`,
+                    })
+                  }
                   target="_blank"
                   rel="noreferrer"
                   className="w-full py-3 rounded-full bg-gradient-gold text-primary-foreground text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg hover:scale-[1.02] transition"

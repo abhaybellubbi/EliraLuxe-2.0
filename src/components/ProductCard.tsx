@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { addOrder, getContentSettingsSafe } from "@/lib/api";
+import { addOrderSafe, getContentSettingsSafe } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -102,29 +102,11 @@ export function ProductCard({ product }: { product: Product }) {
     if (isOutOfStock) return;
 
     try {
-      const randomNames = [
-        "Aarav Sharma",
-        "Priya Patel",
-        "Rohan Gupta",
-        "Ananya Iyer",
-        "Vikram Singh",
-        "Sneha Rao",
-        "Aditya Joshi",
-        "Diya Malhotra",
-        "Karan Mehta",
-        "Meera Sen",
-      ];
-      const randomName =
-        randomNames[Math.floor(Math.random() * randomNames.length)] + " (WhatsApp)";
-      const randomPhone = "+91 98" + Math.floor(10000000 + Math.random() * 90000000);
-
-      await addOrder({
-        data: {
-          customerName: randomName,
-          customerPhone: randomPhone,
-          productId: product.id,
-          productName: product.name,
-        },
+      await addOrderSafe({
+        customerName: "WhatsApp Lead",
+        customerPhone: "Not Provided (WhatsApp Lead)",
+        productId: product.id,
+        productName: product.name,
       });
       toast.success(`Enquiry logged for "${product.name}"! Opening WhatsApp...`);
     } catch (error) {

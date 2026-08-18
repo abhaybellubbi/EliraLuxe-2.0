@@ -18,7 +18,7 @@ import {
   ExternalLink,
   Info,
 } from "lucide-react";
-import { getProductsSafe } from "@/lib/api";
+import { getProductsSafe, addOrderSafe } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 
 interface RecommendationItem {
@@ -524,7 +524,15 @@ export function AIChatBot() {
                                 )}`}
                                 target="_blank"
                                 rel="noreferrer"
-                                onClick={(e) => e.stopPropagation()}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  addOrderSafe({
+                                    customerName: "AI Stylist User (WhatsApp)",
+                                    customerPhone: "Not Provided (WhatsApp Lead)",
+                                    productId: rec.id,
+                                    productName: rec.name,
+                                  });
+                                }}
                                 className="p-1.5 rounded-full bg-gold/20 text-gold-deep hover:bg-gold hover:text-black transition"
                                 title="Enquire on WhatsApp"
                               >
@@ -646,6 +654,14 @@ export function AIChatBot() {
                 href={`https://wa.me/918217456264?text=${encodeURIComponent(
                   `Hi Elira Luxe! I loved "${previewProduct.name}" suggested by your AI Stylist. Please assist with ordering!`
                 )}`}
+                onClick={() =>
+                  addOrderSafe({
+                    customerName: "AI Stylist Preview (WhatsApp)",
+                    customerPhone: "Not Provided (WhatsApp Lead)",
+                    productId: previewProduct.id,
+                    productName: previewProduct.name,
+                  })
+                }
                 target="_blank"
                 rel="noreferrer"
                 className="flex-1 py-2.5 rounded-full bg-gradient-gold text-black text-xs font-bold text-center flex items-center justify-center gap-1.5 hover:opacity-90 transition shadow-lg shadow-gold/20"

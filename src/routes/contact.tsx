@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { SiteLayout } from "@/components/SiteLayout";
 
 import { useQuery } from "@tanstack/react-query";
-import { getContentSettingsSafe } from "@/lib/api";
+import { getContentSettingsSafe, addOrderSafe } from "@/lib/api";
 
 export const Route = createFileRoute("/contact")({
   component: Contact,
@@ -83,6 +83,14 @@ function Contact() {
         <div className="mt-10 grid sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
           <a
             href={`https://wa.me/${settings.contactWhatsapp}`}
+            onClick={() =>
+              addOrderSafe({
+                customerName: "Contact Page Visitor (WhatsApp)",
+                customerPhone: `+${settings.contactWhatsapp}`,
+                productId: "contact_direct",
+                productName: "Direct WhatsApp Contact Enquiry",
+              })
+            }
             target="_blank"
             rel="noreferrer"
             className="inline-flex justify-center items-center px-8 py-3 rounded-full bg-gradient-gold text-primary-foreground font-medium shadow-xl shadow-gold/20 hover:scale-105 transition"

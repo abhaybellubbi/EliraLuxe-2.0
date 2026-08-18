@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Sparkles, Layers, ShieldCheck, Plus, Check, ShoppingBag, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { getUniqueStylesSafe, getContentSettingsSafe, addOrder } from "@/lib/api";
+import { getUniqueStylesSafe, getContentSettingsSafe, addOrderSafe } from "@/lib/api";
 import { resolveMediaUrl } from "@/lib/utils";
 import lookbook1 from "@/assets/lookbook-1.jpg";
 import lookbook2 from "@/assets/lookbook-2.jpg";
@@ -122,13 +122,11 @@ export function UniqueStylesSection() {
   const handleStackEnquiry = () => {
     if (!selectedStyle) return;
     try {
-      addOrder({
-        data: {
-          customerName: "Custom Stack Builder (WhatsApp)",
-          customerPhone: `+${storeWhatsapp}`,
-          productId: selectedStyle.id,
-          productName: `${selectedStyle.title} Stack (${selectedList.join(", ") || "Full Stack"})`,
-        },
+      addOrderSafe({
+        customerName: "Custom Stack Builder (WhatsApp)",
+        customerPhone: `+${storeWhatsapp}`,
+        productId: selectedStyle.id,
+        productName: `${selectedStyle.title} Stack (${selectedList.join(", ") || "Full Stack"})`,
       });
     } catch (e) {
       console.error(e);

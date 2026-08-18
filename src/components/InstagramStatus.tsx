@@ -5,7 +5,7 @@ import {
   getInstagramStoriesSafe,
   getInstagramPostsSafe,
   getContentSettingsSafe,
-  addOrder,
+  addOrderSafe,
 } from "@/lib/api";
 import { resolveMediaUrl } from "@/lib/utils";
 import logo from "@/assets/logo.png";
@@ -145,13 +145,11 @@ export function InstagramStatus() {
 
   const handleStoryEnquiry = (productName: string) => {
     try {
-      addOrder({
-        data: {
-          customerName: "Instagram Viewer (WhatsApp)",
-          customerPhone: `+${storeWhatsapp}`,
-          productId: "story_" + Date.now(),
-          productName: productName || "Instagram Story Featured Piece",
-        },
+      addOrderSafe({
+        customerName: "Instagram Viewer (WhatsApp)",
+        customerPhone: `+${storeWhatsapp}`,
+        productId: "story_" + Date.now(),
+        productName: productName || "Instagram Story Featured Piece",
       });
     } catch (e) {
       console.error(e);
@@ -357,6 +355,7 @@ export function InstagramStatus() {
                           href={`https://wa.me/918217456264?text=${encodeURIComponent(
                             `Hi! I saw this Instagram post on your site (${post.tag}). Please share details.`
                           )}`}
+                          onClick={() => handleStoryEnquiry(`Post: ${post.tag || "Featured Look"}`)}
                           target="_blank"
                           rel="noreferrer"
                           className="w-full py-2 rounded-full bg-gradient-gold text-primary-foreground text-xs font-semibold flex items-center justify-center gap-2 shadow-lg"

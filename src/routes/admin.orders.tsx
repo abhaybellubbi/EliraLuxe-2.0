@@ -42,7 +42,7 @@ function AdminOrders() {
 
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ["orders"],
-    queryFn: () => getOrders(),
+    queryFn: () => getOrdersSafe(),
   });
 
   const { data: products = [] } = useQuery({
