@@ -12,11 +12,50 @@ import {
   type UniqueStyleItem,
   type InstagramStoryItem,
   type InstagramPostItem,
+  type DatabaseSchema,
 } from "../server/db-store";
+import { supabase } from "./supabase";
 
 const ADMIN_USERNAME = "Aliysha";
 const ADMIN_PASSWORD = "Alish582";
 const MOCK_TOKEN = "elira-luxe-admin-session-token-2026";
+const LOCAL_STORAGE_KEY = "elira_store_state_v2";
+
+function getLocalStorageState(): Partial<DatabaseSchema> | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (e) {
+    return null;
+  }
+}
+
+function saveLocalStorageState(state: Partial<DatabaseSchema>) {
+  if (typeof window === "undefined") return;
+  try {
+    const existing = getLocalStorageState() || {};
+    const updated = { ...existing, ...state };
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+  } catch (e) {
+    console.warn("Failed to write to localStorage:", e);
+  }
+}
+
+async function syncPayloadToSupabase(payload: Partial<DatabaseSchema>) {
+  try {
+    const existing = getLocalStorageState() || {};
+    const fullPayload = { ...existing, ...payload };
+    await supabase.from("elira_store_state").upsert({
+      id: 1,
+      payload: fullPayload,
+      updated_at: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.warn("Client Supabase sync notice:", err);
+  }
+}
 
 export const getProducts = createServerFn({ method: "POST" }).handler(async () => {
   try {
@@ -312,63 +351,296 @@ import {
 
 // Safe Client Wrappers (Never throw on Vercel or Serverless network error)
 export const getProductsSafe = async (): Promise<Product[]> => {
+  let serverProducts: Product[] | null = null;
   try {
     const res = await getProducts();
-    return Array.isArray(res) ? res : (initialProducts as Product[]);
+    if (Array.isArray(res) && res.length > 0) {
+      serverProducts = res;
+    }
   } catch (err) {
-    console.warn("getProductsSafe fallback:", err);
-    return initialProducts as Product[];
+    console.warn("getProductsSafe server fetch fallback:", err);
   }
+
+  const localState = getLocalStorageState();
+  if (localState?.products && Array.isArray(localState.products) && localState.products.length > 0) {
+    return localState.products;
+  }
+
+  return serverProducts || (initialProducts as Product[]);
+};
+
+export const updateProductSafe = async (
+  product: Product
+): Promise<{ success: boolean; product: Product }> => {
+  try {
+    await updateProduct({ data: product });
+  } catch (err) {
+    console.warn("updateProductSafe server call warning:", err);
+  }
+
+  if (typeof window !== "undefined") {
+    const currentProducts = await getProductsSafe();
+    const index = currentProducts.findIndex((p) => p.id === product.id);
+    let updated: Product[];
+    if (index >= 0) {
+      updated = [...currentProducts];
+      updated[index] = product;
+    } else {
+      updated = [product, ...currentProducts];
+    }
+    saveLocalStorageState({ products: updated });
+    syncPayloadToSupabase({ products: updated });
+  }
+
+  return { success: true, product };
+};
+
+export const deleteProductSafe = async (id: string): Promise<{ success: boolean }> => {
+  try {
+    await deleteProduct({ data: id });
+  } catch (err) {
+    console.warn("deleteProductSafe server call warning:", err);
+  }
+
+  if (typeof window !== "undefined") {
+    const currentProducts = await getProductsSafe();
+    const updated = currentProducts.filter((p) => p.id !== id);
+    saveLocalStorageState({ products: updated });
+    syncPayloadToSupabase({ products: updated });
+  }
+
+  return { success: true };
 };
 
 export const getContentSettingsSafe = async (): Promise<ContentSettings> => {
+  let serverSettings: ContentSettings | null = null;
   try {
     const res = await getContentSettings();
-    return res || (initialContentSettings as ContentSettings);
+    if (res) serverSettings = res;
   } catch (err) {
-    console.warn("getContentSettingsSafe fallback:", err);
-    return initialContentSettings as ContentSettings;
+    console.warn("getContentSettingsSafe server fetch fallback:", err);
   }
+
+  const localState = getLocalStorageState();
+  if (localState?.contentSettings) {
+    return localState.contentSettings;
+  }
+
+  return serverSettings || (initialContentSettings as ContentSettings);
+};
+
+export const updateContentSettingsSafe = async (
+  settings: ContentSettings
+): Promise<{ success: boolean; settings: ContentSettings }> => {
+  try {
+    await updateContentSettings({ data: settings });
+  } catch (err) {
+    console.warn("updateContentSettingsSafe server call warning:", err);
+  }
+
+  if (typeof window !== "undefined") {
+    saveLocalStorageState({ contentSettings: settings });
+    syncPayloadToSupabase({ contentSettings: settings });
+  }
+
+  return { success: true, settings };
 };
 
 export const getUniqueStylesSafe = async (): Promise<UniqueStyleItem[]> => {
+  let serverStyles: UniqueStyleItem[] | null = null;
   try {
     const res = await getUniqueStyles();
-    return Array.isArray(res) ? res : (initialUniqueStyles as UniqueStyleItem[]);
+    if (Array.isArray(res) && res.length > 0) serverStyles = res;
   } catch (err) {
-    console.warn("getUniqueStylesSafe fallback:", err);
-    return initialUniqueStyles as UniqueStyleItem[];
+    console.warn("getUniqueStylesSafe server fetch fallback:", err);
   }
+
+  const localState = getLocalStorageState();
+  if (localState?.uniqueStyles && Array.isArray(localState.uniqueStyles) && localState.uniqueStyles.length > 0) {
+    return localState.uniqueStyles;
+  }
+
+  return serverStyles || (initialUniqueStyles as UniqueStyleItem[]);
+};
+
+export const updateUniqueStyleSafe = async (
+  style: UniqueStyleItem
+): Promise<{ success: boolean; style: UniqueStyleItem }> => {
+  try {
+    await updateUniqueStyle({ data: style });
+  } catch (err) {
+    console.warn("updateUniqueStyleSafe server call warning:", err);
+  }
+
+  if (typeof window !== "undefined") {
+    const current = await getUniqueStylesSafe();
+    const index = current.findIndex((s) => s.id === style.id);
+    let updated: UniqueStyleItem[];
+    if (index >= 0) {
+      updated = [...current];
+      updated[index] = style;
+    } else {
+      updated = [style, ...current];
+    }
+    saveLocalStorageState({ uniqueStyles: updated });
+    syncPayloadToSupabase({ uniqueStyles: updated });
+  }
+
+  return { success: true, style };
+};
+
+export const deleteUniqueStyleSafe = async (id: string): Promise<{ success: boolean }> => {
+  try {
+    await deleteUniqueStyle({ data: id });
+  } catch (err) {
+    console.warn("deleteUniqueStyleSafe server call warning:", err);
+  }
+
+  if (typeof window !== "undefined") {
+    const current = await getUniqueStylesSafe();
+    const updated = current.filter((s) => s.id !== id);
+    saveLocalStorageState({ uniqueStyles: updated });
+    syncPayloadToSupabase({ uniqueStyles: updated });
+  }
+
+  return { success: true };
 };
 
 export const getInstagramStoriesSafe = async (): Promise<InstagramStoryItem[]> => {
+  let serverStories: InstagramStoryItem[] | null = null;
   try {
     const res = await getInstagramStories();
-    return Array.isArray(res) ? res : (initialInstagramStories as InstagramStoryItem[]);
+    if (Array.isArray(res) && res.length > 0) serverStories = res;
   } catch (err) {
-    console.warn("getInstagramStoriesSafe fallback:", err);
-    return initialInstagramStories as InstagramStoryItem[];
+    console.warn("getInstagramStoriesSafe server fetch fallback:", err);
   }
+
+  const localState = getLocalStorageState();
+  if (localState?.instagramStories && Array.isArray(localState.instagramStories) && localState.instagramStories.length > 0) {
+    return localState.instagramStories;
+  }
+
+  return serverStories || (initialInstagramStories as InstagramStoryItem[]);
+};
+
+export const updateInstagramStorySafe = async (
+  story: InstagramStoryItem
+): Promise<{ success: boolean; story: InstagramStoryItem }> => {
+  try {
+    await updateInstagramStory({ data: story });
+  } catch (err) {
+    console.warn("updateInstagramStorySafe server call warning:", err);
+  }
+
+  if (typeof window !== "undefined") {
+    const current = await getInstagramStoriesSafe();
+    const index = current.findIndex((s) => s.id === story.id);
+    let updated: InstagramStoryItem[];
+    if (index >= 0) {
+      updated = [...current];
+      updated[index] = story;
+    } else {
+      updated = [story, ...current];
+    }
+    saveLocalStorageState({ instagramStories: updated });
+    syncPayloadToSupabase({ instagramStories: updated });
+  }
+
+  return { success: true, story };
+};
+
+export const deleteInstagramStorySafe = async (id: string): Promise<{ success: boolean }> => {
+  try {
+    await deleteInstagramStory({ data: id });
+  } catch (err) {
+    console.warn("deleteInstagramStorySafe server call warning:", err);
+  }
+
+  if (typeof window !== "undefined") {
+    const current = await getInstagramStoriesSafe();
+    const updated = current.filter((s) => s.id !== id);
+    saveLocalStorageState({ instagramStories: updated });
+    syncPayloadToSupabase({ instagramStories: updated });
+  }
+
+  return { success: true };
 };
 
 export const getInstagramPostsSafe = async (): Promise<InstagramPostItem[]> => {
+  let serverPosts: InstagramPostItem[] | null = null;
   try {
     const res = await getInstagramPosts();
-    return Array.isArray(res) ? res : (initialInstagramPosts as InstagramPostItem[]);
+    if (Array.isArray(res) && res.length > 0) serverPosts = res;
   } catch (err) {
-    console.warn("getInstagramPostsSafe fallback:", err);
-    return initialInstagramPosts as InstagramPostItem[];
+    console.warn("getInstagramPostsSafe server fetch fallback:", err);
   }
+
+  const localState = getLocalStorageState();
+  if (localState?.instagramPosts && Array.isArray(localState.instagramPosts) && localState.instagramPosts.length > 0) {
+    return localState.instagramPosts;
+  }
+
+  return serverPosts || (initialInstagramPosts as InstagramPostItem[]);
+};
+
+export const updateInstagramPostSafe = async (
+  post: InstagramPostItem
+): Promise<{ success: boolean; post: InstagramPostItem }> => {
+  try {
+    await updateInstagramPost({ data: post });
+  } catch (err) {
+    console.warn("updateInstagramPostSafe server call warning:", err);
+  }
+
+  if (typeof window !== "undefined") {
+    const current = await getInstagramPostsSafe();
+    const index = current.findIndex((p) => p.id === post.id);
+    let updated: InstagramPostItem[];
+    if (index >= 0) {
+      updated = [...current];
+      updated[index] = post;
+    } else {
+      updated = [post, ...current];
+    }
+    saveLocalStorageState({ instagramPosts: updated });
+    syncPayloadToSupabase({ instagramPosts: updated });
+  }
+
+  return { success: true, post };
+};
+
+export const deleteInstagramPostSafe = async (id: string): Promise<{ success: boolean }> => {
+  try {
+    await deleteInstagramPost({ data: id });
+  } catch (err) {
+    console.warn("deleteInstagramPostSafe server call warning:", err);
+  }
+
+  if (typeof window !== "undefined") {
+    const current = await getInstagramPostsSafe();
+    const updated = current.filter((p) => p.id !== id);
+    saveLocalStorageState({ instagramPosts: updated });
+    syncPayloadToSupabase({ instagramPosts: updated });
+  }
+
+  return { success: true };
 };
 
 export const getOrdersSafe = async (): Promise<Order[]> => {
+  let serverOrders: Order[] | null = null;
   try {
     const res = await getOrders();
-    return Array.isArray(res) ? res : [];
+    if (Array.isArray(res)) serverOrders = res;
   } catch (err) {
-    console.warn("getOrdersSafe fallback:", err);
-    return [];
+    console.warn("getOrdersSafe server fetch fallback:", err);
   }
+
+  const localState = getLocalStorageState();
+  if (localState?.orders && Array.isArray(localState.orders)) {
+    return localState.orders;
+  }
+
+  return serverOrders || [];
 };
 
 export const addOrderSafe = async (orderData: {
@@ -377,19 +649,141 @@ export const addOrderSafe = async (orderData: {
   productId: string;
   productName: string;
 }): Promise<{ success: boolean; order?: Order }> => {
+  const newOrder: Order = {
+    id: "ord_" + Math.random().toString(36).substr(2, 9),
+    customerName: orderData.customerName || "WhatsApp Lead",
+    customerPhone: orderData.customerPhone || "Not Provided (WhatsApp Lead)",
+    productId: orderData.productId,
+    productName: orderData.productName,
+    status: "pending",
+    createdAt: new Date().toISOString(),
+  };
+
   try {
-    const res = await addOrder({
+    await addOrder({
       data: {
-        customerName: orderData.customerName || "WhatsApp Lead",
-        customerPhone: orderData.customerPhone || "Not Provided (WhatsApp Lead)",
-        productId: orderData.productId,
-        productName: orderData.productName,
+        customerName: newOrder.customerName,
+        customerPhone: newOrder.customerPhone,
+        productId: newOrder.productId,
+        productName: newOrder.productName,
       },
     });
-    return res;
   } catch (err) {
-    console.warn("addOrderSafe fallback notice:", err);
-    return { success: false };
+    console.warn("addOrderSafe server call warning:", err);
   }
+
+  if (typeof window !== "undefined") {
+    const current = await getOrdersSafe();
+    const updated = [newOrder, ...current];
+    saveLocalStorageState({ orders: updated });
+    syncPayloadToSupabase({ orders: updated });
+  }
+
+  return { success: true, order: newOrder };
 };
+
+export const updateOrderStatusSafe = async (data: {
+  id: string;
+  status: Order["status"];
+}): Promise<{ success: boolean; order?: Order }> => {
+  try {
+    await updateOrderStatus({ data });
+  } catch (err) {
+    console.warn("updateOrderStatusSafe server call warning:", err);
+  }
+
+  let updatedOrder: Order | undefined;
+  if (typeof window !== "undefined") {
+    const current = await getOrdersSafe();
+    const updated = current.map((o) => {
+      if (o.id === data.id) {
+        updatedOrder = { ...o, status: data.status };
+        return updatedOrder;
+      }
+      return o;
+    });
+    saveLocalStorageState({ orders: updated });
+    syncPayloadToSupabase({ orders: updated });
+  }
+
+  return { success: true, order: updatedOrder };
+};
+
+export const deleteOrderSafe = async (id: string): Promise<{ success: boolean }> => {
+  try {
+    await deleteOrder({ data: id });
+  } catch (err) {
+    console.warn("deleteOrderSafe server call warning:", err);
+  }
+
+  if (typeof window !== "undefined") {
+    const current = await getOrdersSafe();
+    const updated = current.filter((o) => o.id !== id);
+    saveLocalStorageState({ orders: updated });
+    syncPayloadToSupabase({ orders: updated });
+  }
+
+  return { success: true };
+};
+
+export const getPromotionsSafe = async (): Promise<Promotion[]> => {
+  let serverPromos: Promotion[] | null = null;
+  try {
+    const res = await getPromotions();
+    if (Array.isArray(res)) serverPromos = res;
+  } catch (err) {
+    console.warn("getPromotionsSafe server fetch fallback:", err);
+  }
+
+  const localState = getLocalStorageState();
+  if (localState?.promotions && Array.isArray(localState.promotions)) {
+    return localState.promotions;
+  }
+
+  return serverPromos || [];
+};
+
+export const updatePromotionSafe = async (
+  promo: Promotion
+): Promise<{ success: boolean; promo: Promotion }> => {
+  try {
+    await updatePromotion({ data: promo });
+  } catch (err) {
+    console.warn("updatePromotionSafe server call warning:", err);
+  }
+
+  if (typeof window !== "undefined") {
+    const current = await getPromotionsSafe();
+    const index = current.findIndex((p) => p.id === promo.id);
+    let updated: Promotion[];
+    if (index >= 0) {
+      updated = [...current];
+      updated[index] = promo;
+    } else {
+      updated = [promo, ...current];
+    }
+    saveLocalStorageState({ promotions: updated });
+    syncPayloadToSupabase({ promotions: updated });
+  }
+
+  return { success: true, promo };
+};
+
+export const deletePromotionSafe = async (id: string): Promise<{ success: boolean }> => {
+  try {
+    await deletePromotion({ data: id });
+  } catch (err) {
+    console.warn("deletePromotionSafe server call warning:", err);
+  }
+
+  if (typeof window !== "undefined") {
+    const current = await getPromotionsSafe();
+    const updated = current.filter((p) => p.id !== id);
+    saveLocalStorageState({ promotions: updated });
+    syncPayloadToSupabase({ promotions: updated });
+  }
+
+  return { success: true };
+};
+
 

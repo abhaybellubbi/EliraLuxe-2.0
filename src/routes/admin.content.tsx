@@ -3,16 +3,16 @@ import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getContentSettingsSafe,
-  updateContentSettings,
+  updateContentSettingsSafe,
   getUniqueStylesSafe,
-  updateUniqueStyle,
-  deleteUniqueStyle,
+  updateUniqueStyleSafe,
+  deleteUniqueStyleSafe,
   getInstagramStoriesSafe,
-  updateInstagramStory,
-  deleteInstagramStory,
+  updateInstagramStorySafe,
+  deleteInstagramStorySafe,
   getInstagramPostsSafe,
-  updateInstagramPost,
-  deleteInstagramPost,
+  updateInstagramPostSafe,
+  deleteInstagramPostSafe,
 } from "@/lib/api";
 import { resolveMediaUrl } from "@/lib/utils";
 import { compressImageFile, processVideoFile } from "@/lib/compress";
@@ -186,7 +186,7 @@ function AdminContent() {
   };
 
   const saveSettingsMutation = useMutation({
-    mutationFn: (data: any) => updateContentSettings({ data }),
+    mutationFn: (data: any) => updateContentSettingsSafe(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["contentSettings"] });
       toast.success("Settings & Instagram link saved successfully!");
@@ -194,7 +194,7 @@ function AdminContent() {
   });
 
   const saveUniqueStyleMutation = useMutation({
-    mutationFn: (style: any) => updateUniqueStyle({ data: style }),
+    mutationFn: (style: any) => updateUniqueStyleSafe(style),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["uniqueStyles"] });
       toast.success("Unique Style Card saved!");
@@ -206,7 +206,7 @@ function AdminContent() {
   });
 
   const deleteUniqueStyleMutation = useMutation({
-    mutationFn: (id: string) => deleteUniqueStyle({ data: id }),
+    mutationFn: (id: string) => deleteUniqueStyleSafe(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["uniqueStyles"] });
       toast.success("Unique Style Card removed!");
@@ -214,7 +214,7 @@ function AdminContent() {
   });
 
   const saveStoryMutation = useMutation({
-    mutationFn: (story: any) => updateInstagramStory({ data: story }),
+    mutationFn: (story: any) => updateInstagramStorySafe(story),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["instagramStories"] });
       toast.success("Instagram Video / Story Reel published!");
@@ -225,7 +225,7 @@ function AdminContent() {
   });
 
   const deleteStoryMutation = useMutation({
-    mutationFn: (id: string) => deleteInstagramStory({ data: id }),
+    mutationFn: (id: string) => deleteInstagramStorySafe(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["instagramStories"] });
       toast.success("Story Reel removed!");
@@ -233,7 +233,7 @@ function AdminContent() {
   });
 
   const savePostMutation = useMutation({
-    mutationFn: (post: any) => updateInstagramPost({ data: post }),
+    mutationFn: (post: any) => updateInstagramPostSafe(post),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["instagramPosts"] });
       toast.success("Instagram Feed Post published!");
@@ -243,7 +243,7 @@ function AdminContent() {
   });
 
   const deletePostMutation = useMutation({
-    mutationFn: (id: string) => deleteInstagramPost({ data: id }),
+    mutationFn: (id: string) => deleteInstagramPostSafe(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["instagramPosts"] });
       toast.success("Feed Post removed!");

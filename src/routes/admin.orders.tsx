@@ -3,11 +3,11 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getOrdersSafe,
-  addOrder,
+  addOrderSafe,
   getProductsSafe,
   getContentSettingsSafe,
-  updateOrderStatus,
-  deleteOrder,
+  updateOrderStatusSafe,
+  deleteOrderSafe,
 } from "@/lib/api";
 import {
   ShoppingCart,
@@ -61,7 +61,7 @@ function AdminOrders() {
 
   const statusMutation = useMutation({
     mutationFn: (data: { id: string; status: "pending" | "completed" | "cancelled" }) =>
-      updateOrderStatus({ data }),
+      updateOrderStatusSafe(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       toast.success("Order status updated successfully");
@@ -73,7 +73,7 @@ function AdminOrders() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => deleteOrder({ data: id }),
+    mutationFn: (id: string) => deleteOrderSafe(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       toast.success("Enquiry deleted successfully");
@@ -90,7 +90,7 @@ function AdminOrders() {
       customerPhone?: string;
       productId: string;
       productName: string;
-    }) => addOrder({ data }),
+    }) => addOrderSafe(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       toast.success("Manual WhatsApp enquiry added");

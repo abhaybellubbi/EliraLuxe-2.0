@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getProductsSafe, updateProduct, deleteProduct } from "@/lib/api";
+import { getProductsSafe, updateProductSafe, deleteProductSafe } from "@/lib/api";
 import {
   Plus,
   Search,
@@ -60,7 +60,7 @@ function AdminProducts() {
   });
 
   const saveMutation = useMutation({
-    mutationFn: (data: any) => updateProduct({ data }),
+    mutationFn: (data: any) => updateProductSafe(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       toast.success(editingProduct ? "Product updated successfully" : "Product added successfully");
@@ -73,7 +73,7 @@ function AdminProducts() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => deleteProduct({ data: id }),
+    mutationFn: (id: string) => deleteProductSafe(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       toast.success("Product deleted successfully");

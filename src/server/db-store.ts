@@ -418,11 +418,14 @@ export async function writeDb(data: DatabaseSchema): Promise<void> {
 
   // 1. Sync to Supabase cloud database
   try {
-    await supabase.from("elira_store_state").upsert({
+    const { error } = await supabase.from("elira_store_state").upsert({
       id: 1,
       payload: data,
       updated_at: new Date().toISOString(),
     });
+    if (error) {
+      console.log("Supabase write notice (table might be missing):", error.message);
+    }
   } catch (supaErr) {
     console.log("Supabase write notice:", supaErr);
   }
@@ -434,3 +437,4 @@ export async function writeDb(data: DatabaseSchema): Promise<void> {
     console.log("Disk write notice (ignored in serverless):", err);
   }
 }
+
