@@ -87,14 +87,18 @@ function AdminProducts() {
   const openModal = (product: any | null = null) => {
     if (product) {
       setEditingProduct(product);
-      setName(product.name);
-      setTagline(product.tagline);
-      setDescription(product.description || product.tagline);
-      setCategory(product.category);
-      setImage(product.image);
-      setStockStatus(product.stockStatus);
-      setStockQuantity(product.stockQuantity.toString());
-      setSizesInput(product.sizes ? product.sizes.join(", ") : "");
+      setName(product.name || "");
+      setTagline(product.tagline || "");
+      setDescription(product.description || product.tagline || "");
+      setCategory(product.category || "Chain Pendants");
+      setImage(product.image || "");
+      setStockStatus(product.stockStatus || "in_stock");
+      setStockQuantity(
+        product.stockQuantity !== undefined && product.stockQuantity !== null
+          ? String(product.stockQuantity)
+          : "10"
+      );
+      setSizesInput(product.sizes && Array.isArray(product.sizes) ? product.sizes.join(", ") : "");
     } else {
       setEditingProduct(null);
       setName("");

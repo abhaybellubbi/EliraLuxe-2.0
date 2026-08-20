@@ -71,10 +71,11 @@ export const updateProduct = createServerFn({ method: "POST" })
   .inputValidator((product: Product) => product)
   .handler(async ({ data: product }) => {
     const db = await readDb();
-    const index = db.products.findIndex((p) => p.id === product.id);
+    if (!Array.isArray(db.products)) db.products = [];
+    const index = db.products.findIndex((p) => String(p.id) === String(product.id));
 
     if (index >= 0) {
-      db.products[index] = product;
+      db.products[index] = { ...db.products[index], ...product };
     } else {
       db.products.unshift(product);
     }
@@ -87,7 +88,8 @@ export const deleteProduct = createServerFn({ method: "POST" })
   .inputValidator((id: string) => id)
   .handler(async ({ data: id }) => {
     const db = await readDb();
-    const filtered = db.products.filter((p) => p.id !== id);
+    if (!Array.isArray(db.products)) db.products = [];
+    const filtered = db.products.filter((p) => String(p.id) !== String(id));
     db.products = filtered;
     await writeDb(db);
     return { success: true };
@@ -362,11 +364,31 @@ export const getProductsSafe = async (): Promise<Product[]> => {
   }
 
   const localState = getLocalStorageState();
+
+  if (serverProducts && serverProducts.length > 0) {
+    // Merge server products with any local storage edits
+    let mergedProducts = [...serverProducts];
+    if (localState?.products && Array.isArray(localState.products)) {
+      localState.products.forEach((lp) => {
+        const idx = mergedProducts.findIndex((sp) => String(sp.id) === String(lp.id));
+        if (idx >= 0) {
+          mergedProducts[idx] = { ...mergedProducts[idx], ...lp };
+        } else {
+          mergedProducts.unshift(lp);
+        }
+      });
+    }
+    if (typeof window !== "undefined") {
+      saveLocalStorageState({ products: mergedProducts });
+    }
+    return mergedProducts;
+  }
+
   if (localState?.products && Array.isArray(localState.products) && localState.products.length > 0) {
     return localState.products;
   }
 
-  return serverProducts || (initialProducts as Product[]);
+  return (initialProducts as Product[]);
 };
 
 export const updateProductSafe = async (
@@ -379,12 +401,16 @@ export const updateProductSafe = async (
   }
 
   if (typeof window !== "undefined") {
-    const currentProducts = await getProductsSafe();
-    const index = currentProducts.findIndex((p) => p.id === product.id);
+    const localState = getLocalStorageState();
+    const currentProducts = localState?.products && Array.isArray(localState.products) && localState.products.length > 0
+      ? localState.products
+      : (await getProductsSafe());
+
+    const index = currentProducts.findIndex((p) => String(p.id) === String(product.id));
     let updated: Product[];
     if (index >= 0) {
       updated = [...currentProducts];
-      updated[index] = product;
+      updated[index] = { ...updated[index], ...product };
     } else {
       updated = [product, ...currentProducts];
     }
@@ -403,8 +429,12 @@ export const deleteProductSafe = async (id: string): Promise<{ success: boolean 
   }
 
   if (typeof window !== "undefined") {
-    const currentProducts = await getProductsSafe();
-    const updated = currentProducts.filter((p) => p.id !== id);
+    const localState = getLocalStorageState();
+    const currentProducts = localState?.products && Array.isArray(localState.products) && localState.products.length > 0
+      ? localState.products
+      : (await getProductsSafe());
+
+    const updated = currentProducts.filter((p) => String(p.id) !== String(id));
     saveLocalStorageState({ products: updated });
     syncPayloadToSupabase({ products: updated });
   }
